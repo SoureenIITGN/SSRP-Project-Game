@@ -85,16 +85,36 @@ namespace SSRP.EditorTools
             }
             c.ArenaBunkerPrefab = BuildArena(c, "Arena02_Bunker", bunker);
 
+            // Arena 03 - Pillars ([D7] assets-only arena + [B6] extension tiles).
+            var pillars = new Layout();
+            foreach (float sx in new[] { -1f, 1f })
+            {
+                foreach (float sy in new[] { -1f, 1f })
+                {
+                    float x0 = sx > 0 ? 2.5f : -3.5f;
+                    float y0 = sy > 0 ? 1f : -2.5f;
+                    pillars.Solid.Add((new Vector2(x0, y0), new Vector2(x0 + 1f, y0 + 1.5f)));
+                    pillars.Interactive.Add((new Vector2(sx * 6f - 0.5f, sy * 4f - 0.5f),
+                        new Vector2(sx * 6f + 0.5f, sy * 4f + 0.5f), c.BouncePad));
+                }
+            }
+            pillars.Zones.Add((new Vector2(-0.5f, -1.5f), new Vector2(0.5f, 1.5f), c.SpeedZone));
+            pillars.Zones.Add((new Vector2(-0.5f, 3f), new Vector2(0.5f, 3.5f), c.SlowMo));
+            pillars.Zones.Add((new Vector2(-0.5f, -3.5f), new Vector2(0.5f, -3f), c.SlowMo));
+            GameObject pillarsPrefab = BuildArena(c, "Arena03_Pillars", pillars);
+
             c.Arenas.Clear();
             c.Arenas.Add(Definition("Arena01_Classic", "classic", "Classic",
                 "Plain Pong: two walls, two goals. Best for tuning filters.", c.ThumbClassic, c.ArenaClassicPrefab));
             c.Arenas.Add(Definition("Arena02_Bunker", "bunker", "Bunker",
                 "A breakable brick wall splits the court. Corner blocks and bounce pads.", c.ThumbBunker, c.ArenaBunkerPrefab));
+            c.Arenas.Add(Definition("Arena03_Pillars", "pillars", "Pillars",
+                "Four pillars, a speed zone through the middle and slow-mo pickups.", c.ThumbPillars, pillarsPrefab));
 
             c.ArenaRegistry = BuildUtil.LoadOrCreate<ArenaRegistry>($"{BuildUtil.SoArena}/ArenaRegistry.asset");
             c.ArenaRegistry.arenas = new List<ArenaDefinition>(c.Arenas);
             BuildUtil.Save(c.ArenaRegistry);
-            c.Log("Arenas: Classic, Bunker (+ definitions and registry).");
+            c.Log("Arenas: Classic, Bunker, Pillars (+ definitions and registry).");
         }
 
         private static ArenaDefinition Definition(string file, string id, string displayName, string description,
