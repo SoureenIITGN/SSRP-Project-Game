@@ -1,5 +1,11 @@
 # C1 — Input Sources: Implementation and Setup Documentation
 
+> **Update after M2:** `NoiseInjector` is now implemented and wraps any `IPlayerInputSource`.
+> `SerialInputSource` was rewritten in [A2] (background thread, 5-field `docs/serial-protocol.md` format).
+> `InputSourceType` moved to `SSRP.Core` (same values, plus `Udp`). Sources stamp samples with `InputClock.Now`.
+> The on-screen OnGUI labels are off by default; press F1 in game for the debug overlay ([C4]).
+
+
 ## 1. Objective
 
 The objective of this task was to implement a flexible input-source system for the two-player Pong game.

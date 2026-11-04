@@ -8,6 +8,7 @@ Acquire force signals from four FSRs, two per player, using an Arduino. Identify
 
 ## Table of Contents
 
+0. [Quick Start: run the game](#quick-start-run-the-game) and [Project Status](#project-status)
 1. [Project Overview](#project-overview)
 2. [Repository Structure](#repository-structure)
 3. [One-Time Setup](#one-time-setup)
@@ -15,6 +16,51 @@ Acquire force signals from four FSRs, two per player, using an Arduino. Identify
 5. [Golden Rules for Unity + Git](#golden-rules-for-unity--git)
 6. [Git Cheat Sheet](#git-cheat-sheet)
 7. [Troubleshooting](#troubleshooting)
+
+---
+
+## Quick Start: run the game
+
+1. Open the project with the exact Unity version in `ProjectSettings/ProjectVersion.txt` (6000.5.10f1).
+2. **First open only:** the editor asks *"Run SSRP > Build Project now?"*. Click **Build now**, or use the
+   menu **SSRP > Build Project**. This generates every scene, prefab, tile, arena and config asset from
+   code (see `Assets/Editor/Build/`). One person runs it, then commits the new files under `Assets/`
+   (including the `.meta` files), so everyone shares the same GUIDs.
+3. Open `Assets/Scenes/Boot.unity` (**SSRP > Open Boot Scene**) and press **Play**.
+
+| Action | Keys |
+|---|---|
+| Player 1 (left) | **W** = up sensor, **S** = down sensor |
+| Player 2 (right) | **Up arrow** / **Down arrow** |
+| Parry | both of your keys (or both FSRs) held firmly |
+| Pause | **Esc** or **P** |
+| Live sensor debug overlay | **F1** |
+
+**With the Arduino:** flash `arduino/ssrp_fsr/ssrp_fsr.ino` and wire it as in `docs/hardware/wiring.md`.
+Then go to **Match Setup**, pick the port, press **Connect**, then **Calibrate sensors...**, and set a
+player's input to **Arduino (USB)**.
+
+**Tests:** **Window > General > Test Runner**, then *EditMode* > Run All and *PlayMode* > Run All (`docs/physics.md`).
+
+**Dev scenes** (open directly, no menu needed): `Scenes/Gameplay/Dev_PhysicsSandbox`,
+`Scenes/Gameplay/Dev_TileArena`, `Scenes/Input/Dev_InputPipeline` (keyboard vs noisy keyboard, with the F1
+overlay on) and `Scenes/Input/Dev_SerialPanel` (Arduino, no menu).
+
+## Project Status
+
+All 26 issues in `docs/GITHUB_ISSUES.md` are implemented. The git history has one commit per issue.
+The items below **need people or hardware** and cannot be done in code:
+
+| Issue | Remaining manual step |
+|---|---|
+| [A1] | Measure the interval and jitter on the real board (`python/serial_logger.py`) and fill in the table in `docs/serial-protocol.md` |
+| [A5] | Wire, mount, photograph, record `data/samples/raw_1min.csv`, play a full match on FSRs (`docs/hardware/bringup.md`) |
+| [C5] | Build the circuit in TinkerCAD, save screenshots and the share link in `docs/hardware/` (`docs/hardware/wiring.md`) |
+| [D7] | Capture the screenshots for the "Add an arena" guide (`docs/EXTENDING.md`) |
+| all | Review and approve the PRs as a team (rules in `docs/GITHUB_ISSUES.md`) |
+
+Design notes: `docs/ARCHITECTURE.md` (how it fits together), `docs/EXTENDING.md` (adding tiles,
+power-ups, abilities, arenas, inputs, filters), `docs/physics.md`, `docs/serial-protocol.md`, `docs/CREDITS.md`.
 
 ---
 
@@ -225,3 +271,17 @@ Don't push. Tell a teammate and ask for help.
 
 **I forgot which branch I'm on.**
 Run `git branch` (the current branch is marked with `*`).
+
+**The SSRP menu is missing.**
+The scripts did not compile. Open the Console (*Window > General > Console*), fix the first red error
+(or send it to the team), and the menu appears after recompiling.
+
+**`System.IO.Ports` / `SerialPort` could not be found.**
+Go to *Edit > Project Settings > Player > Other Settings > Api Compatibility Level* and set it to **.NET Framework**.
+
+**Serial: "Access denied" or "port in use".**
+Another program has the port open: the Arduino IDE Serial Monitor/Plotter or `serial_logger.py`. Close it,
+then press **Connect** again. On macOS use the `/dev/cu.usbmodem...` port.
+
+**Text is invisible or the UI looks empty.**
+The UI is built at runtime from code (`Assets/Scripts/UI`), so check the Console for errors first.
