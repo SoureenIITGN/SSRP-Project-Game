@@ -1,0 +1,2 @@
+# Only needed for the serial modes (udp_sender.py --mode serial/filter, serial_logger.py).
+pyserial>=3.5

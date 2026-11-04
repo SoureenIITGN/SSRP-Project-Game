@@ -16,11 +16,13 @@ namespace SSRP.Input
         [SerializeField] private ScriptedInputSource scripted;
         [SerializeField] private SerialInputSource serial;
         [SerializeField] private NoiseInjector noiseInjected;
+        [SerializeField] private UdpInputSource udp;
 
         public KeyboardInputSource Keyboard => keyboard;
         public ScriptedInputSource Scripted => scripted;
         public SerialInputSource Serial => serial;
         public NoiseInjector NoiseInjected => noiseInjected;
+        public UdpInputSource Udp => udp;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics() => Instance = null;
@@ -51,6 +53,7 @@ namespace SSRP.Input
                 case InputSourceType.Scripted: scripted = source as ScriptedInputSource; break;
                 case InputSourceType.Serial: serial = source as SerialInputSource; break;
                 case InputSourceType.NoiseInjected: noiseInjected = source as NoiseInjector; break;
+                case InputSourceType.Udp: udp = source as UdpInputSource; break;
             }
         }
 
@@ -58,12 +61,17 @@ namespace SSRP.Input
         {
             switch (type)
             {
-                case InputSourceType.Keyboard: return keyboard;
-                case InputSourceType.Scripted: return scripted;
-                case InputSourceType.Serial: return serial;
-                case InputSourceType.NoiseInjected: return noiseInjected;
+                case InputSourceType.Keyboard: return Valid(keyboard);
+                case InputSourceType.Scripted: return Valid(scripted);
+                case InputSourceType.Serial: return Valid(serial);
+                case InputSourceType.NoiseInjected: return Valid(noiseInjected);
+                case InputSourceType.Udp: return Valid(udp);
                 default: return null;
             }
         }
+
+        // Unity "fake null" objects (unassigned/destroyed) must not leak out as non-null interfaces.
+        private static IPlayerInputSource Valid(MonoBehaviour source) =>
+            source != null ? source as IPlayerInputSource : null;
     }
 }

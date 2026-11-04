@@ -34,6 +34,9 @@ namespace SSRP.Input
         [SerializeField]
         private NoiseInjector noiseInjectorSource;
 
+        [SerializeField]
+        private UdpInputSource udpSource;
+
         [Header("Player Identity ([C3], set from MatchConfig by PlayerSpawner)")]
         [SerializeField]
         private string displayName = "Player";
@@ -126,6 +129,9 @@ namespace SSRP.Input
 
                 case InputSourceType.NoiseInjected:
                     return noiseInjectorSource != null ? noiseInjectorSource : null;
+
+                case InputSourceType.Udp:
+                    return udpSource != null ? udpSource : null;
 
                 default:
                     return null;
