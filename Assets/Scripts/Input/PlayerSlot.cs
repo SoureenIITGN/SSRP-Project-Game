@@ -4,14 +4,7 @@ using SSRP.Core;
 
 namespace SSRP.Input
 {
-    //An enum is a way of defining a fixed set of choices.
-    public enum InputSourceType
-    {
-        Keyboard,
-        Scripted,
-        Serial,
-        NoiseInjected
-    }
+    // InputSourceType (the enum of choices) now lives in SSRP.Core so MatchConfig can use it.
 
     //By storing a MonoBehaviour reference, we can drag a component into the Inspector and then check whether it implements IPlayerInputSource.
     //The same applies to the Scripted and Serial references.
