@@ -107,6 +107,10 @@ namespace SSRP.Flow
     {
         public static void Add(GameObject root, GameObject input, InputSourceRegistry registry)
         {
+            // [D6] Audio listener for events (no clips without the config asset, so it stays silent).
+            var audio = new GameObject("Audio");
+            audio.transform.SetParent(root.transform, false);
+            audio.AddComponent<SSRP.Audio.AudioManager>();
         }
     }
 }
