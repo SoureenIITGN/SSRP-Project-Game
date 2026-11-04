@@ -8,7 +8,8 @@ namespace SSRP.Input
     public enum ScriptedPattern
     {
         SineSweep,
-        Step
+        Step,
+        Constant
     }
 
     //We use MonoBehaviour as it directly integrated the c# script to Unity, so it can work as a component
@@ -35,10 +36,41 @@ namespace SSRP.Input
         [SerializeField, Min(0.01f)]
         private float stepDuration = 1f;
 
+        [Header("Constant Settings (used by automated tests)")]
+        [SerializeField, Range(0f, 1023f)]
+        private float constantUp = 1023f;
+
+        [SerializeField, Range(0f, 1023f)]
+        private float constantDown;
+
+        [Header("Debug")]
+        [SerializeField]
+        private bool showDebugGui;
+
         private const float MAX_READING = 1023f;
         private const float CENTER = MAX_READING / 2f;
 
+        private float startTime;
+
         public bool IsConnected => true;
+
+        public ScriptedPattern Pattern
+        {
+            get => pattern;
+            set { pattern = value; startTime = Time.time; }
+        }
+
+        /// <summary>Set the values used by the Constant pattern (raw counts 0-1023).</summary>
+        public void SetConstant(float up, float down)
+        {
+            constantUp = Mathf.Clamp(up, 0f, MAX_READING);
+            constantDown = Mathf.Clamp(down, 0f, MAX_READING);
+        }
+
+        private void OnEnable()
+        {
+            startTime = Time.time;
+        }
 
         public bool TryGetLatest(
             int playerId, out RawFsrSample sample)
@@ -48,43 +80,45 @@ namespace SSRP.Input
             if (playerId != 1 && playerId != 2)
                 return false;
 
-            float up;
-            float down;
-
-            if (pattern == ScriptedPattern.SineSweep)
-            {
-                GenerateSineSweep(out up, out down);
-            }
-            else
-            {
-                GenerateStep(playerId, out up, out down);
-            }
+            Evaluate(playerId, Time.time - startTime, out float up, out float down);
 
             sample = new RawFsrSample
             {
                 Up = up,
                 Down = down,
-                Time = Time.timeAsDouble
+                Time = InputClock.Now
             };
 
             return true;
         }
 
-        private void GenerateSineSweep(
-            out float up, out float down)
+        /// <summary>The pattern value at time t (seconds since the pattern started).</summary>
+        public void Evaluate(int playerId, float t, out float up, out float down)
         {
-            float t = Time.time % sweepDuration;
+            switch (pattern)
+            {
+                case ScriptedPattern.SineSweep:
+                    GenerateSineSweep(t, out up, out down);
+                    break;
 
-            // Frequency increases gradually over the sweep.
-            float progress = t / sweepDuration;
+                case ScriptedPattern.Step:
+                    GenerateStep(playerId, t, out up, out down);
+                    break;
 
-            //float frequency = Mathf.Lerp(
-            //    minFrequency,
-            //    maxFrequency,
-            //    progress
-            //);
+                default:
+                    up = constantUp;
+                    down = constantDown;
+                    break;
+            }
+        }
 
-            // Approximate phase for a continuously increasing frequency.
+        private void GenerateSineSweep(
+            float time, out float up, out float down)
+        {
+            float t = time % sweepDuration;
+
+            // Approximate phase for a continuously increasing frequency
+            // (linear chirp from minFrequency to maxFrequency over sweepDuration).
             float phase = 2f * Mathf.PI *
                 (minFrequency * t +
                 0.5f * (maxFrequency - minFrequency)
@@ -102,13 +136,11 @@ namespace SSRP.Input
         //Generates four distinct states for player 1: (0, 0), (1023, 0), (1023, 1023), (0, 1023)
         //Each pair represents the UP and DOWNN readings resembling a square wave input
         //Player 2 is given a time advance so it is distinguishable from player 1
-        //This is just a test to see if the code works properly or not
-        
         private void GenerateStep(
-            int playerId, out float up, out float down)
+            int playerId, float time, out float up, out float down)
         {
             int step = Mathf.FloorToInt(
-                Time.time / stepDuration);
+                time / stepDuration);
 
             // Offset Player 2 so its pattern is distinguishable.
             step += playerId - 1;
@@ -137,10 +169,13 @@ namespace SSRP.Input
             }
         }
 
-        //This code is just for testing the script on the screen
-        //Can be removed when we connect the actual Arduino Interface and make the actual
+        //This code is just for testing the script on the screen.
+        //Off by default: the F1 debug overlay (C4) shows the same information.
         private void OnGUI()
-            {
+        {
+            if (!showDebugGui)
+                return;
+
             TryGetLatest(1, out RawFsrSample p1);
             TryGetLatest(2, out RawFsrSample p2);
 
@@ -149,6 +184,6 @@ namespace SSRP.Input
 
             GUI.Label(new Rect(10, 160, 400, 25),
                 $"P2: {p2.Up:F0} | {p2.Down:F0}");
-            }   
+        }
     }
 }

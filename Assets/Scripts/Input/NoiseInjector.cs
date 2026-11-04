@@ -4,12 +4,16 @@ using SSRP.Core;
 
 namespace SSRP.Input
 {
+    /// <summary>
+    /// Wraps ANY IPlayerInputSource and adds Gaussian noise and rare spikes, so filters
+    /// can be tested visually without hardware (C1 optional task).
+    /// </summary>
     public class NoiseInjector : MonoBehaviour, IPlayerInputSource
     {
         [Header("Input Source")]
-        [SerializeField]
+        [SerializeField, Tooltip("Any component that implements IPlayerInputSource (Keyboard, Scripted, Serial...).")]
         //takes in an input source to add noise into
-        private ScriptedInputSource sourceComponent;
+        private MonoBehaviour sourceComponent;
 
         [Header("Gaussian Noise")]
         [SerializeField]
@@ -28,16 +32,36 @@ namespace SSRP.Input
         [SerializeField, Min(0f)]
         private float spikeMagnitude = 200f;
 
+        [Header("Debug")]
+        [SerializeField]
+        private bool showDebugGui;
+
         private IPlayerInputSource source;
 
         public bool IsConnected =>
-            source != null && source.IsConnected;
+            Source != null && Source.IsConnected;
+
+        private IPlayerInputSource Source
+        {
+            get
+            {
+                if (source == null && sourceComponent != null)
+                    source = sourceComponent as IPlayerInputSource;
+
+                return source;
+            }
+        }
+
+        /// <summary>Wrap a source from code (e.g. a test, or the input registry).</summary>
+        public void SetSource(IPlayerInputSource inner)
+        {
+            source = inner;
+            sourceComponent = inner as MonoBehaviour;
+        }
 
         private void Awake()
         {
-            source = sourceComponent as IPlayerInputSource;
-
-            if (source == null)
+            if (sourceComponent != null && !(sourceComponent is IPlayerInputSource))
             {
                 Debug.LogError(
                     "NoiseInjector: Assigned component does not implement IPlayerInputSource.",
@@ -46,15 +70,28 @@ namespace SSRP.Input
             }
         }
 
+        private void OnValidate()
+        {
+            if (sourceComponent != null && !(sourceComponent is IPlayerInputSource))
+            {
+                Debug.LogWarning("NoiseInjector: the source must implement IPlayerInputSource.", this);
+                sourceComponent = null;
+            }
+
+            source = null;
+        }
+
         public bool TryGetLatest(
             int playerId, out RawFsrSample sample)
         {
             sample = default;
 
-            if (source == null)
+            IPlayerInputSource inner = Source;
+
+            if (inner == null || ReferenceEquals(inner, this))
                 return false;
 
-            if (!source.TryGetLatest(playerId, out sample))
+            if (!inner.TryGetLatest(playerId, out sample))
                 return false;
 
             float up = sample.Up;
@@ -112,16 +149,12 @@ namespace SSRP.Input
 
         private void OnGUI()
         {
-            bool success = TryGetLatest(
-                1, out RawFsrSample sample);
+            if (!showDebugGui)
+                return;
 
-            if (!success)
+            if (!TryGetLatest(1, out RawFsrSample sample))
             {
-                GUI.Label(
-                    new Rect(10, 150, 400, 25),
-                    "No input source available"
-                );
-
+                GUI.Label(new Rect(10, 150, 400, 25), "No input source available");
                 return;
             }
 

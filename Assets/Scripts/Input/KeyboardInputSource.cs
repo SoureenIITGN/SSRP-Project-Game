@@ -15,6 +15,10 @@ namespace SSRP.Input
         [SerializeField, Min(0.01f)]
         private float rampSeconds = 0.1f;
 
+        [Header("Debug")]
+        [SerializeField, Tooltip("Old on-screen labels from C1. The F1 overlay (C4) replaces them.")]
+        private bool showDebugGui;
+
         private const float MAX_READING = 1023f;
 
         // Player 1 readings
@@ -29,7 +33,8 @@ namespace SSRP.Input
 
         private void Update()
         {
-            float dt = Time.deltaTime;
+            // Unscaled so the ramp keeps working while the game is paused (menus, pause screen).
+            float dt = Time.unscaledDeltaTime;
 
             // Check whether a keyboard is available
             if (Keyboard.current == null)
@@ -88,7 +93,7 @@ namespace SSRP.Input
                 {
                     Up = p1Up,
                     Down = p1Down,
-                    Time = Time.timeAsDouble
+                    Time = InputClock.Now
                 };
 
                 return true;
@@ -100,7 +105,7 @@ namespace SSRP.Input
                 {
                     Up = p2Up,
                     Down = p2Down,
-                    Time = Time.timeAsDouble
+                    Time = InputClock.Now
                 };
 
                 return true;
@@ -110,26 +115,15 @@ namespace SSRP.Input
         }
 
         private void OnGUI()
-            {
-        bool newInput =
-            Keyboard.current != null &&
-            Keyboard.current.wKey.isPressed;
+        {
+            if (!showDebugGui)
+                return;
 
-        GUI.Label(new Rect(10, 10, 400, 25),
-            $"Input System W: {newInput}");
+            GUI.Label(new Rect(10, 50, 400, 25),
+                $"P1 Up: {p1Up:F0} | Down: {p1Down:F0}");
 
-        GUI.Label(new Rect(10, 50, 400, 25),
-            $"P1 Up: {p1Up:F0} | Down: {p1Down:F0}");
-
-        GUI.Label(new Rect(10, 80, 400, 25),
-            $"P2 Up: {p2Up:F0} | Down: {p2Down:F0}");
-
-        RawFsrSample sample;
-
-        bool success = TryGetLatest(1, out sample);
-
-        GUI.Label(new Rect(10, 170, 500, 25),
-            $"Interface: {success} | Up: {sample.Up:F0} | Down: {sample.Down:F0}");
+            GUI.Label(new Rect(10, 80, 400, 25),
+                $"P2 Up: {p2Up:F0} | Down: {p2Down:F0}");
         }
     }
 }

@@ -8,6 +8,8 @@ namespace SSRP.Input
 
     //By storing a MonoBehaviour reference, we can drag a component into the Inspector and then check whether it implements IPlayerInputSource.
     //The same applies to the Scripted and Serial references.
+    //If a field is left empty, the slot falls back to the shared source in InputSourceRegistry
+    //(the persistent services object), which is what paddles spawned at runtime use.
     public class PlayerSlot : MonoBehaviour
     {
         [Header("Player Settings")]
@@ -19,7 +21,7 @@ namespace SSRP.Input
         private InputSourceType inputSourceType =
             InputSourceType.Keyboard;
 
-        [Header("Available Input Sources")]
+        [Header("Available Input Sources (optional, registry used if empty)")]
         [SerializeField]
         private KeyboardInputSource keyboardSource;
 
@@ -32,21 +34,51 @@ namespace SSRP.Input
         [SerializeField]
         private NoiseInjector noiseInjectorSource;
 
+        public int PlayerId => playerId;
+
+        public InputSourceType InputSourceType => inputSourceType;
+
+        /// <summary>Change the device used by this player at runtime.</summary>
+        public void SetInputSource(InputSourceType type)
+        {
+            inputSourceType = type;
+        }
+
+        public void SetPlayerId(int id)
+        {
+            playerId = id;
+        }
+
+        /// <summary>The source currently selected (null if none is available).</summary>
+        public IPlayerInputSource CurrentSource => GetSelectedSource();
+
         private IPlayerInputSource GetSelectedSource()
         {
+            IPlayerInputSource local = GetInspectorSource();
+
+            if (local != null)
+                return local;
+
+            InputSourceRegistry registry = InputSourceRegistry.Instance;
+            return registry != null ? registry.Get(inputSourceType) : null;
+        }
+
+        private IPlayerInputSource GetInspectorSource()
+        {
+            // Explicit Unity null checks: a destroyed component is "== null" but not C#-null.
             switch (inputSourceType)
             {
                 case InputSourceType.Keyboard:
-                    return keyboardSource;
+                    return keyboardSource != null ? keyboardSource : null;
 
                 case InputSourceType.Scripted:
-                    return scriptedSource;
+                    return scriptedSource != null ? scriptedSource : null;
 
                 case InputSourceType.Serial:
-                    return serialSource;
+                    return serialSource != null ? serialSource : null;
 
                 case InputSourceType.NoiseInjected:
-                    return noiseInjectorSource;
+                    return noiseInjectorSource != null ? noiseInjectorSource : null;
 
                 default:
                     return null;
