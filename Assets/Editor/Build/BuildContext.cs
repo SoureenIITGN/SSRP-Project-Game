@@ -42,6 +42,33 @@ namespace SSRP.EditorTools
 
         public readonly List<string> Report = new List<string>();
 
+        /// <summary>
+        /// Re-load every asset the scene step uses from its path. Needed after
+        /// EditorSceneManager.NewScene(Single), which unloads assets and leaves stale references.
+        /// </summary>
+        public void ReloadAssets()
+        {
+            Square = AssetDatabase.LoadAssetAtPath<Sprite>($"{BuildUtil.Sprites}/square.png");
+            Circle = AssetDatabase.LoadAssetAtPath<Sprite>($"{BuildUtil.Sprites}/circle.png");
+            SpriteMaterial = AssetDatabase.LoadAssetAtPath<Material>($"{BuildUtil.Materials}/SpriteUnlit.mat");
+            ParticleMaterial = AssetDatabase.LoadAssetAtPath<Material>($"{BuildUtil.Materials}/ParticleSoft.mat");
+            Bouncy = AssetDatabase.LoadAssetAtPath<PhysicsMaterial2D>($"{BuildUtil.PhysicsFolder}/Bouncy.physicsMaterial2D");
+
+            PaddlePrefab = BuildUtil.LoadPrefabComponent<PaddleController>($"{BuildUtil.PrefabsGameplay}/Paddle.prefab");
+            BallPrefab = BuildUtil.LoadPrefabComponent<BallController>($"{BuildUtil.PrefabsGameplay}/Ball.prefab");
+            ServicesPrefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{BuildUtil.PrefabsCore}/SSRP_Services.prefab");
+            HudPrefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{BuildUtil.PrefabsUi}/PlayerHud.prefab");
+            FlowUiPrefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{BuildUtil.PrefabsUi}/FlowUi.prefab");
+            SerialPanelPrefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{BuildUtil.PrefabsUi}/SerialConnectionPanel.prefab");
+            CalibrationPanelPrefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{BuildUtil.PrefabsUi}/CalibrationPanel.prefab");
+            TileBurstPrefab = BuildUtil.LoadPrefabComponent<ParticleSystem>($"{BuildUtil.PrefabsAudio}/TileBurst.prefab");
+            ArenaClassicPrefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{BuildUtil.PrefabsArena}/Arena01_Classic.prefab");
+            ArenaBunkerPrefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{BuildUtil.PrefabsArena}/Arena02_Bunker.prefab");
+
+            if (BallPrefab == null || PaddlePrefab == null || SpriteMaterial == null)
+                Debug.LogError("[SSRP Builder] Could not reload generated assets; run SSRP > Build Project again.");
+        }
+
         public void Log(string line)
         {
             Report.Add(line);
@@ -161,12 +188,7 @@ namespace SSRP.EditorTools
 
         private static AudioClip Clip(string name)
         {
-            AudioClip clip = AssetDatabase.LoadAssetAtPath<AudioClip>($"{BuildUtil.Sfx}/{name}.wav");
-
-            if (clip == null)
-                Debug.LogWarning($"[SSRP Builder] Missing sound {name}.wav. Run: python tools/generate_sfx.py");
-
-            return clip;
+            return BuildUtil.ImportClip($"{BuildUtil.Sfx}/{name}.wav");
         }
     }
 }

@@ -177,37 +177,96 @@ namespace SSRP.EditorTools
 
         // ---- art ----------------------------------------------------------------------------------
 
+        /// <summary>
+        /// Import a PNG as a single 2D sprite with EVERY relevant setting written explicitly and a forced
+        /// reimport. (A .meta file with missing fields leaves odd defaults - e.g. cubemap shape, no alpha -
+        /// and then Unity produces no Sprite at all.) Throws if the sprite still does not exist.
+        /// </summary>
         public static Sprite ImportSprite(string fileName, float pixelsPerUnit, FilterMode filter = FilterMode.Bilinear)
         {
             string path = $"{Sprites}/{fileName}.png";
             var importer = AssetImporter.GetAtPath(path) as TextureImporter;
 
             if (importer == null)
+                throw new System.InvalidOperationException(
+                    $"[SSRP Builder] Missing image {path}. Run: python tools/generate_art.py");
+
+            var settings = new TextureImporterSettings();
+            importer.ReadTextureSettings(settings);
+            settings.textureType = TextureImporterType.Sprite;
+            settings.textureShape = TextureImporterShape.Texture2D;
+            settings.spriteMode = (int)SpriteImportMode.Single;
+            settings.spritePixelsPerUnit = pixelsPerUnit;
+            settings.spriteMeshType = SpriteMeshType.FullRect;
+            settings.spriteAlignment = (int)SpriteAlignment.Center;
+            settings.spritePivot = new Vector2(0.5f, 0.5f);
+            settings.spriteExtrude = 1;
+            settings.spriteGenerateFallbackPhysicsShape = false;
+            settings.alphaSource = TextureImporterAlphaSource.FromInput;
+            settings.alphaIsTransparency = true;
+            settings.sRGBTexture = true;
+            settings.mipmapEnabled = false;
+            settings.npotScale = TextureImporterNPOTScale.None;
+            settings.readable = false;
+            settings.filterMode = filter;
+            settings.wrapMode = TextureWrapMode.Clamp;
+            settings.aniso = 1;
+            importer.SetTextureSettings(settings);
+
+            importer.textureCompression = TextureImporterCompression.Uncompressed;
+            importer.maxTextureSize = 2048;
+            importer.SaveAndReimport();
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate | ImportAssetOptions.ForceSynchronousImport);
+
+            Sprite sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+
+            if (sprite == null)
             {
-                Debug.LogError($"[SSRP Builder] Missing sprite {path}. Run: python tools/generate_art.py");
+                foreach (Object sub in AssetDatabase.LoadAllAssetsAtPath(path))
+                {
+                    if (sub is Sprite s)
+                    {
+                        sprite = s;
+                        break;
+                    }
+                }
+            }
+
+            if (sprite == null)
+                throw new System.InvalidOperationException(
+                    $"[SSRP Builder] Unity did not create a Sprite for {path}. Select it, set Texture Type = " +
+                    "Sprite (2D and UI), press Apply, then run SSRP > Build Project again.");
+
+            return sprite;
+        }
+
+        /// <summary>Import a WAV as a plain, uncompressed, preloaded clip (same .meta problem as the sprites).</summary>
+        public static AudioClip ImportClip(string path)
+        {
+            var importer = AssetImporter.GetAtPath(path) as AudioImporter;
+
+            if (importer == null)
+            {
+                Debug.LogWarning($"[SSRP Builder] Missing sound {path}. Run: python tools/generate_sfx.py");
                 return null;
             }
 
-            bool changed = importer.textureType != TextureImporterType.Sprite ||
-                           importer.spriteImportMode != SpriteImportMode.Single ||
-                           !Mathf.Approximately(importer.spritePixelsPerUnit, pixelsPerUnit) ||
-                           importer.filterMode != filter ||
-                           importer.mipmapEnabled;
+            AudioImporterSampleSettings sample = importer.defaultSampleSettings;
+            sample.loadType = AudioClipLoadType.DecompressOnLoad;
+            sample.compressionFormat = AudioCompressionFormat.PCM;
+            sample.sampleRateSetting = AudioSampleRateSetting.PreserveSampleRate;
+            sample.quality = 1f;
+            importer.defaultSampleSettings = sample;
+            importer.forceToMono = false;
+            importer.loadInBackground = false;
+            importer.SaveAndReimport();
 
-            if (changed)
-            {
-                importer.textureType = TextureImporterType.Sprite;
-                importer.spriteImportMode = SpriteImportMode.Single;
-                importer.spritePixelsPerUnit = pixelsPerUnit;
-                importer.filterMode = filter;
-                importer.mipmapEnabled = false;
-                importer.alphaIsTransparency = true;
-                importer.wrapMode = TextureWrapMode.Clamp;
-                importer.textureCompression = TextureImporterCompression.Uncompressed;
-                importer.SaveAndReimport();
-            }
+            AudioClip clip = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
 
-            return AssetDatabase.LoadAssetAtPath<Sprite>(path);
+            if (clip == null)
+                Debug.LogWarning($"[SSRP Builder] Unity did not create an AudioClip for {path}.");
+
+            return clip;
         }
 
         public static Material CreateSpriteMaterial(string name, Texture texture = null)

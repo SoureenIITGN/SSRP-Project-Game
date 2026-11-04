@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7eefd42d113f49508c90d21246abca42, type: 3}
+  m_Name: GameCatalog
+  m_EditorClassIdentifier: SSRP.Runtime::SSRP.Flow.GameCatalog
+  defaultMatchConfig: {fileID: 11400000, guid: 65adf819d0837bf4c8cc41c375cd612c, type: 2}
+  ballPresets:
+  - {fileID: 11400000, guid: 4a073ca5c9336a64194594ecd8c148d9, type: 2}
+  - {fileID: 11400000, guid: 27945d1d65396fe4893a21ee37e6c294, type: 2}
+  - {fileID: 11400000, guid: bf8a8e7e6e76663408368b578b58b719, type: 2}
+  arenaRegistry: {fileID: 11400000, guid: 5b1731787e42e734792496eb029d5d79, type: 2}
+  servicesPrefab: {fileID: 84064242796426938, guid: 6957fcc2e3e313e42b91db5fda81efa2, type: 3}
+  targetScoreOptions: 05000000070000000b000000

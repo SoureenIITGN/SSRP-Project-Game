@@ -28,8 +28,8 @@ namespace SSRP.EditorTools
 
         public static void CreateAll(BuildContext c)
         {
-            Boot();
-            MainMenu();
+            Boot(c);
+            MainMenu(c);
             Game(c);
             PhysicsSandbox(c);
             TileArena(c);
@@ -41,9 +41,14 @@ namespace SSRP.EditorTools
 
         // ------------------------------------------------------------------ helpers
 
-        private static Scene NewScene()
+        private static Scene NewScene(BuildContext c)
         {
-            return EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+
+            // Opening a scene in Single mode unloads unused assets, which invalidates the references
+            // the builder kept to prefabs/materials it created earlier. Reload them from disk.
+            c.ReloadAssets();
+            return scene;
         }
 
         private static void SaveScene(Scene scene, string path)
@@ -120,17 +125,17 @@ namespace SSRP.EditorTools
 
         // ------------------------------------------------------------------ scenes
 
-        private static void Boot()
+        private static void Boot(BuildContext c)
         {
-            Scene scene = NewScene();
+            Scene scene = NewScene(c);
             MakeCamera(5f);
             new GameObject("Bootstrapper").AddComponent<Bootstrapper>();
             SaveScene(scene, BootPath);
         }
 
-        private static void MainMenu()
+        private static void MainMenu(BuildContext c)
         {
-            Scene scene = NewScene();
+            Scene scene = NewScene(c);
             MakeCamera(5f);
             MakeEventSystem();
 
@@ -152,7 +157,7 @@ namespace SSRP.EditorTools
 
         private static void Game(BuildContext c)
         {
-            Scene scene = NewScene();
+            Scene scene = NewScene(c);
             Camera cam = MakeCamera(7f);
             cam.gameObject.AddComponent<ArenaCameraFitter>();
             FeedbackManager feedback = cam.gameObject.AddComponent<FeedbackManager>();
@@ -187,7 +192,7 @@ namespace SSRP.EditorTools
 
         private static void PhysicsSandbox(BuildContext c)
         {
-            Scene scene = NewScene();
+            Scene scene = NewScene(c);
             MakeCamera(6f);
 
             Wall(c, "TopWall", new Vector2(0f, 4.75f), new Vector2(17f, 0.5f));
@@ -207,7 +212,7 @@ namespace SSRP.EditorTools
 
         private static void TileArena(BuildContext c)
         {
-            Scene scene = NewScene();
+            Scene scene = NewScene(c);
             MakeCamera(7f);
 
             Spawn(c.ArenaBunkerPrefab, "Arena (Bunker)");
@@ -228,7 +233,7 @@ namespace SSRP.EditorTools
 
         private static void InputPipeline(BuildContext c)
         {
-            Scene scene = NewScene();
+            Scene scene = NewScene(c);
             MakeCamera(7f);
             MakeEventSystem();
             new GameObject("EnsureServices").AddComponent<EnsureServices>();
@@ -250,7 +255,7 @@ namespace SSRP.EditorTools
 
         private static void SerialPanel(BuildContext c)
         {
-            Scene scene = NewScene();
+            Scene scene = NewScene(c);
             MakeCamera(7f);
             MakeEventSystem();
             new GameObject("EnsureServices").AddComponent<EnsureServices>();

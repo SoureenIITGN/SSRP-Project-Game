@@ -1,0 +1,15 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d12b876b2ce41a8888bb4fa0d1b9a9f, type: 3}
+  m_Name: BreakableBehaviour
+  m_EditorClassIdentifier: SSRP.Runtime::SSRP.Gameplay.BreakableBehaviour
+  damagedTile: {fileID: 11400000, guid: f9f84f4fd70f88a4ca4f260d64b5a027, type: 2}

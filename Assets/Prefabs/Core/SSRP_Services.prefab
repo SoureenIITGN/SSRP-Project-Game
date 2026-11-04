@@ -1,0 +1,262 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &84064242796426938
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4399114003423919385}
+  - component: {fileID: 4054939567349509913}
+  - component: {fileID: 3029708699082129391}
+  m_Layer: 0
+  m_Name: SSRP_Services
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4399114003423919385
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 84064242796426938}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3029302355697885400}
+  - {fileID: 992197072686530481}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4054939567349509913
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 84064242796426938}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecab220562484580a70db73647067b01, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SSRP.Runtime::SSRP.Flow.GameServices
+--- !u!114 &3029708699082129391
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 84064242796426938}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6599796595fe479eabe4f0be7c0bdaba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SSRP.Runtime::SSRP.Flow.SceneLoader
+  fadeDuration: 0.3
+  fadeColour: {r: 0, g: 0, b: 0, a: 1}
+--- !u!1 &293213304033707006
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 992197072686530481}
+  - component: {fileID: 1850434592120419917}
+  m_Layer: 0
+  m_Name: Audio
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &992197072686530481
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 293213304033707006}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4399114003423919385}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1850434592120419917
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 293213304033707006}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a83243bc6dcc4657b9d5d081de0dba52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SSRP.Runtime::SSRP.Audio.AudioManager
+  config: {fileID: 11400000, guid: 6ea61c4b0da88884591676644fffe72b, type: 2}
+  voices: 8
+--- !u!1 &8479438304951279229
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3029302355697885400}
+  - component: {fileID: 5850547339296057443}
+  - component: {fileID: 5141826746885242556}
+  - component: {fileID: 6041263639430287724}
+  - component: {fileID: 4251142534746851809}
+  - component: {fileID: 5015822828780475175}
+  - component: {fileID: 8016674470004740668}
+  - component: {fileID: 5427138711616633793}
+  m_Layer: 0
+  m_Name: Input
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3029302355697885400
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8479438304951279229}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4399114003423919385}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5850547339296057443
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8479438304951279229}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c38ec9d64f15de49b0d8802749d024b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SSRP.Runtime::SSRP.Input.KeyboardInputSource
+  rampSeconds: 0.1
+  showDebugGui: 0
+--- !u!114 &5141826746885242556
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8479438304951279229}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d9b545e645f0864e810dc5b06704fd7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SSRP.Runtime::SSRP.Input.ScriptedInputSource
+  pattern: 0
+  sweepDuration: 10
+  minFrequency: 0.2
+  maxFrequency: 2
+  stepDuration: 1
+  constantUp: 1023
+  constantDown: 0
+  showDebugGui: 0
+--- !u!114 &6041263639430287724
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8479438304951279229}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b47aaf4c95bc32144adf487cf84e4bf0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SSRP.Runtime::SSRP.Input.SerialInputSource
+  config: {fileID: 11400000, guid: c8efec81a28522f4b87cf49e3cb04125, type: 2}
+  portName: COM3
+  baudRate: 115200
+--- !u!114 &4251142534746851809
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8479438304951279229}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb4adba8215541ac8f11f2fe72459e08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SSRP.Runtime::SSRP.Input.SerialConnectionManager
+  source: {fileID: 6041263639430287724}
+  config: {fileID: 11400000, guid: c8efec81a28522f4b87cf49e3cb04125, type: 2}
+  autoConnectOnStart: 1
+--- !u!114 &5015822828780475175
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8479438304951279229}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e402180de2046a6879fff522fbe3771, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SSRP.Runtime::SSRP.Input.UdpInputSource
+  port: 5005
+  listenOnEnable: 1
+  watchdogMs: 250
+--- !u!114 &8016674470004740668
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8479438304951279229}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5965764630fa90943a24c2709d266ce5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SSRP.Runtime::SSRP.Input.NoiseInjector
+  sourceComponent: {fileID: 5850547339296057443}
+  enableGaussianNoise: 1
+  gaussianStdDev: 10
+  enableSpikes: 1
+  spikeProbability: 0.005
+  spikeMagnitude: 200
+  showDebugGui: 0
+--- !u!114 &5427138711616633793
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8479438304951279229}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb49decf5d9249e3b869be1ae7f94eb1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SSRP.Runtime::SSRP.Input.InputSourceRegistry
+  keyboard: {fileID: 5850547339296057443}
+  scripted: {fileID: 5141826746885242556}
+  serial: {fileID: 6041263639430287724}
+  noiseInjected: {fileID: 8016674470004740668}
+  udp: {fileID: 5015822828780475175}
