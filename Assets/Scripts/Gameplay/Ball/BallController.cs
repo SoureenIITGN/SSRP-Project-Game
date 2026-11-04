@@ -141,6 +141,10 @@ namespace SSRP.Gameplay
             rb.linearVelocity = Vector2.zero;
             rb.position = spawnPosition;
             transform.position = spawnPosition;
+
+            // A teleport would otherwise draw a streak across the arena.
+            if (TryGetComponent(out TrailRenderer trail))
+                trail.Clear();
         }
 
         public void Freeze()

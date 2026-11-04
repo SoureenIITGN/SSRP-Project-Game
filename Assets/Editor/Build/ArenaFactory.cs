@@ -166,7 +166,7 @@ namespace SSRP.EditorTools
 
             BuildUtil.SetVector2(anchors, "boundsMin", new Vector2(-HalfWidth, -HalfHeight));
             BuildUtil.SetVector2(anchors, "boundsMax", new Vector2(HalfWidth, HalfHeight));
-            BuildUtil.SetFloat(anchors, "cameraMargin", 1.3f);
+            BuildUtil.SetFloat(anchors, "cameraMargin", 1.8f);
             BuildUtil.Set(anchors, "leftPaddleSpawn", leftSpawn.transform);
             BuildUtil.Set(anchors, "rightPaddleSpawn", rightSpawn.transform);
             BuildUtil.Set(anchors, "ballSpawn", ballSpawn.transform);

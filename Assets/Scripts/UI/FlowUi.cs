@@ -22,6 +22,7 @@ namespace SSRP.UI
         private Text pauseTitle;
         private Text pauseDetail;
         private Button resumeButton;
+        private SerialConnectionPanel pauseSerialPanel;
         private GameObject resultsPanel;
         private Text winnerText;
         private Text scoreText;
@@ -73,13 +74,14 @@ namespace SSRP.UI
             pausePanel = pause.gameObject;
             RectTransform pauseBox = UiFactory.CreateRect("Box", pause.transform);
             UiFactory.Place(pauseBox, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero,
-                new Vector2(900f, 560f));
+                new Vector2(900f, 840f));
             UiFactory.AddVertical(pauseBox, 20f, 0, TextAnchor.MiddleCenter, false);
 
             pauseTitle = UiFactory.CreateText(pauseBox, "Title", "Paused", 90, TextAnchor.MiddleCenter, UiTheme.Accent, FontStyle.Bold);
             UiFactory.SetSize(pauseTitle, 900f, 120f, 0f);
             pauseDetail = UiFactory.CreateText(pauseBox, "Detail", "", 30, TextAnchor.MiddleCenter, UiTheme.Warn);
             UiFactory.SetSize(pauseDetail, 900f, 90f, 0f);
+            pauseSerialPanel = SerialConnectionPanel.Create(pauseBox);
             resumeButton = UiFactory.CreateButton(pauseBox, "ResumeButton", "Resume", OnResume, 420f, 80f);
             UiFactory.CreateButton(pauseBox, "MenuButton", "Main Menu", OnMainMenu, 420f, 80f);
 
@@ -120,6 +122,7 @@ namespace SSRP.UI
                     pauseDetail.text = disconnected
                         ? gm.PauseDetail + "\nReconnect the Arduino, then Resume."
                         : "Esc / P to resume";
+                    pauseSerialPanel.gameObject.SetActive(disconnected);
                     Select(resumeButton);
                     break;
 

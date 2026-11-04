@@ -76,8 +76,8 @@ namespace SSRP.UI
 
             Image window = UiFactory.CreateImage(transform, "Window", UiTheme.Panel);
             UiFactory.Place(window.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                Vector2.zero, new Vector2(1100f, 820f));
-            UiFactory.AddVertical(window, 18f, 36, TextAnchor.UpperCenter);
+                Vector2.zero, new Vector2(1100f, 1060f));
+            UiFactory.AddVertical(window, 14f, 30, TextAnchor.UpperCenter);
 
             Text title = UiFactory.CreateText(window.transform, "Title", "Sensor calibration", 48,
                 TextAnchor.MiddleCenter, UiTheme.Accent, FontStyle.Bold);
@@ -92,26 +92,29 @@ namespace SSRP.UI
             RectTransform progressRow = UiFactory.CreateRow(window.transform, "ProgressRow", 28f);
             progressFill = UiFactory.CreateBar(progressRow, "Progress", UiTheme.Accent, false, 1000f, 24f);
 
-            RectTransform bars = UiFactory.CreateRow(window.transform, "ChannelBars", 250f, 40f);
+            RectTransform bars = UiFactory.CreateRow(window.transform, "ChannelBars", 220f, 40f);
             bars.GetComponent<HorizontalLayoutGroup>().childAlignment = TextAnchor.MiddleCenter;
 
             for (int i = 0; i < CalibrationData.ChannelCount; i++)
             {
                 RectTransform column = UiFactory.CreateRect("Channel" + i, bars);
                 UiFactory.AddVertical(column, 6f, 0, TextAnchor.LowerCenter, false);
-                UiFactory.SetSize(column, 200f, 250f, 0f);
+                UiFactory.SetSize(column, 200f, 220f, 0f);
 
                 channelValues[i] = UiFactory.CreateText(column, "Value", "-", 22);
                 UiFactory.SetSize(channelValues[i], 200f, 28f, 0f);
 
-                channelFills[i] = UiFactory.CreateBar(column, "Bar", i < 2 ? UiTheme.Accent : UiTheme.Warn, true, 60f, 160f);
+                channelFills[i] = UiFactory.CreateBar(column, "Bar", i < 2 ? UiTheme.Accent : UiTheme.Warn, true, 60f, 140f);
 
                 Text label = UiFactory.CreateText(column, "Label", CalibrationData.ChannelNames[i], 22, TextAnchor.MiddleCenter, UiTheme.TextDim);
                 UiFactory.SetSize(label, 200f, 28f, 0f);
             }
 
             messageText = UiFactory.CreateText(window.transform, "Message", "", 24, TextAnchor.MiddleCenter, UiTheme.Warn);
-            UiFactory.SetSize(messageText, -1f, 90f, 1f);
+            UiFactory.SetSize(messageText, -1f, 70f, 1f);
+
+            // Connect from here too (e.g. when calibration is requested at the start of a match).
+            SerialConnectionPanel.Create(window.transform);
 
             RectTransform buttons = UiFactory.CreateRow(window.transform, "Buttons", 76f, 20f);
             buttons.GetComponent<HorizontalLayoutGroup>().childAlignment = TextAnchor.MiddleCenter;
