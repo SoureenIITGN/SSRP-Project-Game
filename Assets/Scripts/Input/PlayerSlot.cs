@@ -34,7 +34,54 @@ namespace SSRP.Input
         [SerializeField]
         private NoiseInjector noiseInjectorSource;
 
+        [Header("Player Identity ([C3], set from MatchConfig by PlayerSpawner)")]
+        [SerializeField]
+        private string displayName = "Player";
+
+        [SerializeField]
+        private Color colour = Color.white;
+
+        [SerializeField]
+        private PaddleSide side = PaddleSide.Left;
+
+        private PlayerInputPipeline pipeline;
+
         public int PlayerId => playerId;
+
+        public string DisplayName => displayName;
+
+        public Color Colour => colour;
+
+        public PaddleSide Side => side;
+
+        /// <summary>Current score (the GameManager's MatchState is the source of truth and updates this).</summary>
+        public int Score { get; set; }
+
+        /// <summary>The pipeline on the same GameObject (may be null for input-only test objects).</summary>
+        public PlayerInputPipeline Pipeline
+        {
+            get
+            {
+                if (pipeline == null)
+                    pipeline = GetComponent<PlayerInputPipeline>();
+
+                return pipeline;
+            }
+        }
+
+        /// <summary>Apply a PlayerDefinition from MatchConfig (data-driven, no 'Player1/Player2' strings).</summary>
+        public void Configure(PlayerDefinition definition)
+        {
+            if (definition == null)
+                return;
+
+            playerId = definition.playerId;
+            displayName = definition.displayName;
+            colour = definition.colour;
+            side = definition.side;
+            inputSourceType = definition.inputSource;
+            Score = 0;
+        }
 
         public InputSourceType InputSourceType => inputSourceType;
 
