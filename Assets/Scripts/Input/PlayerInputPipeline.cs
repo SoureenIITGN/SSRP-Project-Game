@@ -208,10 +208,23 @@ namespace SSRP.Input
             return Mathf.Clamp01((raw - baseline) / span);
         }
 
+        /// <summary>
+        /// Calibration ([A4]) applies to real sensors only (Serial / UDP). Keyboard and scripted
+        /// sources already produce exact 0-1023 values, so they use the default range.
+        /// </summary>
         private void GetRange(int channel, out float baseline, out float max)
         {
             baseline = 0f;
             max = MaxAdc;
+
+            if (slot == null || !slot.InputSourceType.IsHardware())
+                return;
+
+            if (CalibrationStore.Current.TryGetChannel(channel, out ChannelCalibration c))
+            {
+                baseline = c.baseline;
+                max = c.max;
+            }
         }
 
         /// <summary>Values below the deadzone become 0; the rest is rescaled so 1 stays 1.</summary>
