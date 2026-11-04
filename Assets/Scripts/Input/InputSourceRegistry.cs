@@ -42,6 +42,18 @@ namespace SSRP.Input
                 Instance = null;
         }
 
+        /// <summary>Wire a source from code (used by the code-only services fallback and tests).</summary>
+        public void Register(InputSourceType type, MonoBehaviour source)
+        {
+            switch (type)
+            {
+                case InputSourceType.Keyboard: keyboard = source as KeyboardInputSource; break;
+                case InputSourceType.Scripted: scripted = source as ScriptedInputSource; break;
+                case InputSourceType.Serial: serial = source as SerialInputSource; break;
+                case InputSourceType.NoiseInjected: noiseInjected = source as NoiseInjector; break;
+            }
+        }
+
         public IPlayerInputSource Get(InputSourceType type)
         {
             switch (type)
