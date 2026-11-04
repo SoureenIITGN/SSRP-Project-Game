@@ -1,144 +1,201 @@
 
-using UnityEngine;
-using SSRP.Core;
 using System;
 using System.IO.Ports;
-using System.Globalization;
-using System.Text;
+using System.Threading;
+using UnityEngine;
+using SSRP.Core;
 
 namespace SSRP.Input
 {
+    /// <summary>
+    /// Arduino FSR source ([A2]). A background thread reads lines from the serial port
+    /// (ReadLine + ReadTimeout), parses them with <see cref="SerialLineParser"/> and publishes
+    /// the newest frame into a thread-safe buffer. Unity APIs are only used on the main thread.
+    ///
+    /// Requires Project Settings > Player > Api Compatibility Level = .NET Framework
+    /// (System.IO.Ports is not part of .NET Standard). Already set in ProjectSettings.
+    ///
+    /// Connection lifetime (open, reconnect, remember port) is handled by
+    /// <see cref="SerialConnectionManager"/>; this class just opens/closes and reads.
+    /// </summary>
     public class SerialInputSource : MonoBehaviour, IPlayerInputSource
     {
         [Header("Serial Settings")]
+        [SerializeField, Tooltip("Optional. When set, its values override the two fields below.")]
+        private SerialConfig config;
+
         [SerializeField]
         private string portName = "COM3";
 
         [SerializeField]
         private int baudRate = 115200;
 
+        private readonly LatestFrameBuffer buffer = new LatestFrameBuffer();
+
         private SerialPort serialPort;
-        private bool connectionAttempted;
+        private Thread readerThread;
+        private volatile bool running;
+        private volatile bool faulted;
+        private volatile string lastError = "";
+        private volatile string bootBanner = "";
 
-        //Sometimes, the data does not necessarily arrive as one single line, it can be broken down too.
-        //However, the previous code utilized readExisting, which only reads the current data in the buffer
-        //to solve that challenge, we use a StringBuilder to accumulate incoming characters until a complete newline-terminated line is available.
-        private readonly StringBuilder receiveBuffer =
-            new StringBuilder();
+        public string PortName => portName;
+        public int BaudRate => config != null ? config.baudRate : baudRate;
 
-        private RawFsrSample[] latestSamples =
-            new RawFsrSample[3];
+        private double WatchdogSeconds => (config != null ? config.watchdogMs : 250) / 1000.0;
+        private int ReadTimeoutMs => config != null ? config.readTimeoutMs : 50;
 
-        private bool[] hasSample = new bool[3];
+        /// <summary>The port is open and the reader thread is alive.</summary>
+        public bool IsOpen => serialPort != null && running && !faulted;
 
-        public bool IsConnected =>
-            serialPort != null && serialPort.IsOpen;
+        /// <summary>Open AND a valid line arrived within the watchdog window (250 ms).</summary>
+        public bool IsConnected => IsOpen && buffer.Age <= WatchdogSeconds;
 
-        private bool TryOpenSerialPort()
+        public bool Faulted => faulted;
+        public string LastError => lastError;
+        public string BootBanner => bootBanner;
+        public float PacketsPerSecond => buffer.PacketsPerSecond;
+        public long PacketCount => buffer.PacketCount;
+        public long ParseErrors => buffer.ParseErrors;
+
+        /// <summary>Seconds since the last valid line (infinity if none).</summary>
+        public double LastPacketAge => buffer.Age;
+
+        public bool Connect(string port)
         {
-            if (connectionAttempted)
-                return IsConnected;
+            return Connect(port, BaudRate);
+        }
 
-            connectionAttempted = true;
+        public bool Connect(string port, int baud)
+        {
+            Disconnect();
+
+            portName = port;
+            baudRate = baud;
+            faulted = false;
+            lastError = "";
+            bootBanner = "";
+            buffer.Clear();
 
             try
             {
-                serialPort = new SerialPort(portName, baudRate);
-                serialPort.ReadTimeout = 50;
-                serialPort.NewLine = "\n";
+                serialPort = new SerialPort(NormalisePortName(port), baud, Parity.None, 8, StopBits.One)
+                {
+                    ReadTimeout = ReadTimeoutMs,
+                    NewLine = "\n",
+                    DtrEnable = true,
+                    RtsEnable = true
+                };
 
                 serialPort.Open();
+                serialPort.DiscardInBuffer();
 
-                Debug.Log("Serial connected: " + portName);
+                running = true;
+                readerThread = new Thread(ReadLoop)
+                {
+                    IsBackground = true,
+                    Name = "SSRP Serial Reader"
+                };
+                readerThread.Start();
+
+                Debug.Log($"[Serial] Opened {port} @ {baud}");
                 return true;
             }
             catch (Exception e)
             {
-                Debug.LogError(
-                    "Could not open serial port: " + e.Message);
-
-                CloseSerialPort();
+                lastError = e.Message;
+                Debug.LogWarning($"[Serial] Could not open {port}: {e.Message}");
+                Disconnect();
                 return false;
+            }
+        }
+
+        /// <summary>Close the port and join the reader thread (safe to call repeatedly).</summary>
+        public void Disconnect()
+        {
+            running = false;
+
+            SerialPort port = serialPort;
+            serialPort = null;
+
+            if (port != null)
+            {
+                try
+                {
+                    if (port.IsOpen)
+                        port.Close();
+                }
+                catch (Exception e)
+                {
+                    Debug.LogWarning("[Serial] Close warning: " + e.Message);
+                }
+            }
+
+            Thread thread = readerThread;
+            readerThread = null;
+
+            if (thread != null && thread.IsAlive && thread != Thread.CurrentThread)
+            {
+                if (!thread.Join(500))
+                    Debug.LogWarning("[Serial] Reader thread did not stop within 500 ms.");
+            }
+
+            if (port != null)
+            {
+                try { port.Dispose(); }
+                catch (Exception) { /* already closed */ }
+            }
+        }
+
+        private void ReadLoop()
+        {
+            SerialPort port = serialPort;
+
+            while (running)
+            {
+                string line;
+
+                try
+                {
+                    line = port.ReadLine();
+                }
+                catch (TimeoutException)
+                {
+                    continue;
+                }
+                catch (Exception e)
+                {
+                    // Unplugged cable, port closed by Disconnect(), driver error...
+                    if (running)
+                    {
+                        lastError = e.Message;
+                        faulted = true;
+                    }
+
+                    break;
+                }
+
+                switch (SerialLineParser.TryParse(line, out FsrFrame frame))
+                {
+                    case ParseResult.Ok:
+                        buffer.Write(frame);
+                        break;
+
+                    case ParseResult.Comment:
+                        if (line.Contains("SSRP-FSR"))
+                            bootBanner = line.Trim();
+                        break;
+
+                    case ParseResult.Malformed:
+                        buffer.CountParseError();
+                        break;
+                }
             }
         }
 
         private void Update()
         {
-            if (!IsConnected)
-                return;
-
-            try
-            {
-                //Reads the incoming serial input.
-                string incoming = serialPort.ReadExisting();
-
-                if (!string.IsNullOrEmpty(incoming))
-                {
-                    receiveBuffer.Append(incoming);
-                    ProcessReceivedLines();
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError("Serial read error: " + e.Message);
-                CloseSerialPort();
-            }
-        }
-
-        private void ProcessReceivedLines()
-        {
-            while (true)
-            {
-                string data = receiveBuffer.ToString();
-                int newlineIndex = data.IndexOf('\n');
-
-                if (newlineIndex < 0)
-                    break;
-
-                string line = data.Substring(0, newlineIndex).Trim();
-
-                receiveBuffer.Remove(0, newlineIndex + 1);
-
-                ParseLine(line);
-            }
-        }
-
-        private void ParseLine(string line)
-        {
-            string[] values = line.Split(',');
-
-            if (values.Length != 3)
-                return;
-
-            bool validPlayer = int.TryParse(
-                values[0], out int playerId);
-
-            bool validUp = float.TryParse(
-                values[1],
-                NumberStyles.Float,
-                CultureInfo.InvariantCulture,
-                out float up);
-
-            bool validDown = float.TryParse(
-                values[2],
-                NumberStyles.Float,
-                CultureInfo.InvariantCulture,
-                out float down);
-
-            if (!validPlayer || !validUp || !validDown)
-                return;
-
-            if (playerId < 1 || playerId > 2)
-                return;
-
-            latestSamples[playerId] = new RawFsrSample
-            {
-                Up = Mathf.Clamp(up, 0f, 1023f),
-                Down = Mathf.Clamp(down, 0f, 1023f),
-                Time = Time.timeAsDouble
-            };
-
-            hasSample[playerId] = true;
+            buffer.UpdateRate();
         }
 
         public bool TryGetLatest(
@@ -146,49 +203,60 @@ namespace SSRP.Input
         {
             sample = default;
 
-            if (playerId < 1 || playerId > 2)
+            if (!IsOpen)
                 return false;
 
-            if (!TryOpenSerialPort())
+            return buffer.TryGetPlayerSample(playerId, WatchdogSeconds, out sample);
+        }
+
+        /// <summary>Raw access to all 4 channels (used by calibration).</summary>
+        public bool TryGetChannels(float[] destination, out double time)
+        {
+            time = -1;
+
+            if (!IsOpen || destination == null || destination.Length < 4)
                 return false;
 
-            if (!IsConnected || !hasSample[playerId])
+            if (!buffer.TryRead(out FsrFrame frame, out time))
                 return false;
 
-            sample = latestSamples[playerId];
+            if (InputClock.Now - time > WatchdogSeconds)
+                return false;
+
+            for (int i = 0; i < 4; i++)
+                destination[i] = frame[i];
+
             return true;
         }
 
+        /// <summary>Windows needs the \\.\ prefix for COM10 and above.</summary>
+        private static string NormalisePortName(string port)
+        {
+            if (Application.platform != RuntimePlatform.WindowsPlayer &&
+                Application.platform != RuntimePlatform.WindowsEditor)
+                return port;
+
+            if (port.StartsWith("COM", StringComparison.OrdinalIgnoreCase) &&
+                int.TryParse(port.Substring(3), out int n) && n >= 10)
+                return @"\\.\" + port;
+
+            return port;
+        }
+
+        // Clean shutdown: otherwise the COM port stays locked and the next Play press fails.
         private void OnDisable()
         {
-            CloseSerialPort();
-            connectionAttempted = false;
+            Disconnect();
+        }
+
+        private void OnApplicationQuit()
+        {
+            Disconnect();
         }
 
         private void OnDestroy()
         {
-            CloseSerialPort();
-        }
-
-        private void CloseSerialPort()
-        {
-            if (serialPort != null)
-            {
-                try
-                {
-                    if (serialPort.IsOpen)
-                        serialPort.Close();
-
-                    serialPort.Dispose();
-                }
-                catch (Exception e)
-                {
-                    Debug.LogWarning(
-                        "Serial port close warning: " + e.Message);
-                }
-
-                serialPort = null;
-            }
+            Disconnect();
         }
     }
 }
