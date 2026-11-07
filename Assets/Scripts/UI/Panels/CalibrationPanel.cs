@@ -1,4 +1,7 @@
 using System;
+using System.Globalization;
+using System.IO;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using SSRP.Core;
@@ -206,6 +209,8 @@ namespace SSRP.UI
             if (!routine.IsDone)
                 return;
 
+            SaveCalibrationCsv(routine.Samples);
+
             if (routine.Succeeded)
             {
                 CalibrationStore.Save(routine.Result);
@@ -220,6 +225,33 @@ namespace SSRP.UI
 
             routine = null;
             SetButtonsInteractable(true);
+        }
+
+        private static void SaveCalibrationCsv(System.Collections.Generic.IReadOnlyList<CalibrationSample> samples)
+        {
+            string path = Path.Combine(Application.persistentDataPath, "ssrp_calibration_data.csv");
+
+            try
+            {
+                var csv = new StringBuilder(samples.Count * 24);
+                csv.AppendLine("Up1,Down1,Up2,Down2");
+
+                for (int i = 0; i < samples.Count; i++)
+                {
+                    CalibrationSample sample = samples[i];
+                    csv.Append(sample.up1.ToString("0.###", CultureInfo.InvariantCulture)).Append(',');
+                    csv.Append(sample.down1.ToString("0.###", CultureInfo.InvariantCulture)).Append(',');
+                    csv.Append(sample.up2.ToString("0.###", CultureInfo.InvariantCulture)).Append(',');
+                    csv.AppendLine(sample.down2.ToString("0.###", CultureInfo.InvariantCulture));
+                }
+
+                File.WriteAllText(path, csv.ToString(), Encoding.UTF8);
+                Debug.Log($"[Calibration] Saved {samples.Count} samples to {path}");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[Calibration] Could not save {path}: {e.Message}");
+            }
         }
     }
 }

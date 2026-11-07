@@ -152,3 +152,29 @@ clamping. The per-channel deadzone is applied afterward.
   `Assets/Scripts/Gameplay/Paddle/PaddleController.cs`
 - Shared speed/deadzone settings:
   `Assets/Scripts/Core/PaddleConfig.cs`
+
+## Match CSV recording
+
+During `Playing`, Unity records one row per physics step and writes
+`ssrp_match_data.csv` under `Application.persistentDataPath` when the match
+enters `MatchOver`. Starting a new match clears the previous samples, so the
+file is replaced with the most recent completed game.
+
+The columns are:
+
+```text
+Up1,Down1,Speed1,Up2,Down2,Speed2
+```
+
+`Up1` through `Down2` are raw input values clamped to `0-1023`. Keyboard input
+is feasible because its source already generates synthetic `0-1023` readings;
+Arduino (USB) is feasible because its serial source supplies raw ADC readings
+in the same range. Calibration and normalization do not change these CSV
+input columns. `Speed1` and `Speed2` are the actual magnitudes of the two
+paddles' movement velocities in Unity units per second.
+
+Calibration samples are also exported to `ssrp_calibration_data.csv` in the
+same `Application.persistentDataPath` directory. The CSV columns are
+`Up1,Down1,Up2,Down2`, containing every raw four-channel sample accepted after
+the settle period during the calibration routine. The file is written when
+calibration completes, including when validation rejects the calibration.

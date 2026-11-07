@@ -25,6 +25,7 @@ namespace SSRP.Flow
     /// It is the composition root of the Game scene: it loads the arena, spawns the ball and the
     /// paddles from the runtime MatchConfig and wires the goal zones to the right players.
     /// </summary>
+    [RequireComponent(typeof(MatchCsvRecorder))]
     public class GameManager : MonoBehaviour
     {
         [Header("Scene references")]
@@ -70,6 +71,9 @@ namespace SSRP.Flow
         private void Awake()
         {
             Instance = this;
+            if (GetComponent<MatchCsvRecorder>() == null)
+                gameObject.AddComponent<MatchCsvRecorder>();
+
             GameServices.Ensure();
             Config = configOverride != null ? configOverride.CreateRuntimeCopy() : MatchSession.Config;
         }

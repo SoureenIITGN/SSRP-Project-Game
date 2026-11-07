@@ -2,6 +2,14 @@ using System.Collections.Generic;
 
 namespace SSRP.Input
 {
+    public struct CalibrationSample
+    {
+        public float up1;
+        public float down1;
+        public float up2;
+        public float down2;
+    }
+
     /// <summary>
     /// [A4] Guided calibration as a plain C# state machine (no Unity calls, easy to test).
     ///
@@ -25,6 +33,7 @@ namespace SSRP.Input
 
         private readonly List<float>[] restSamples = new List<float>[CalibrationData.ChannelCount];
         private readonly List<float>[] pressSamples = new List<float>[CalibrationData.ChannelCount];
+        private readonly List<CalibrationSample> samples = new List<CalibrationSample>(2048);
         private readonly CalibrationData previous;
         private readonly bool quick;
         private readonly float minSpan;
@@ -53,6 +62,7 @@ namespace SSRP.Input
         public bool Succeeded { get; private set; }
         public string Message { get; private set; } = "";
         public CalibrationData Result { get; private set; }
+        public IReadOnlyList<CalibrationSample> Samples => samples;
 
         private int StepCount => quick ? 1 : 1 + CalibrationData.ChannelCount;
 
@@ -94,6 +104,14 @@ namespace SSRP.Input
 
             if (hasSample && channels != null && stepTime >= SettleSeconds)
             {
+                samples.Add(new CalibrationSample
+                {
+                    up1 = channels[0],
+                    down1 = channels[1],
+                    up2 = channels[2],
+                    down2 = channels[3]
+                });
+
                 if (CurrentKind == StepKind.Rest)
                 {
                     for (int i = 0; i < CalibrationData.ChannelCount; i++)
