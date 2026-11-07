@@ -88,6 +88,20 @@ Worked example: `ParryAbility` ([C6]).
 4. Add the component to `Assets/Prefabs/Gameplay/Paddle.prefab`. Put its numbers in a
    ScriptableObject config.
 
+### Parry: how it works and where to tune it
+
+All numbers live in `Assets/ScriptableObjects/Gameplay/ParryConfig.asset` and can be edited in the
+Inspector, even during Play.
+
+- **Triggering a parry:** `pressThreshold`, `balanceTolerance`, `holdTime` (input lag), `cooldown`
+  and `requireRelease`. When it fires: a white paddle flash, a quiet swish, and `ParryTriggered`.
+- **Success:** the ball touches the paddle within `activeWindow` after the parry, or the parry comes
+  within `lateGrace` after the touch. Then the ball catches fire (`BallFireEffect`: orange flicker,
+  fiery trail, embers) and speeds up by `speedMultiplier`. You also get the parry clang, a 0.12 s
+  freeze-frame, screen shake, an orange paddle flash, a "PARRY!" banner, and `ParrySucceeded`.
+- **When the fire ends:** the other player returns the ball, a goal is scored, or `fireMaxDuration`
+  runs out.
+
 ## 4. Add an arena in 5 minutes
 
 Arenas are **data**: a prefab + an `ArenaDefinition` asset + a registry entry. No scripts.

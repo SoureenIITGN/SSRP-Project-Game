@@ -8,7 +8,7 @@ namespace SSRP.Input
     /// [C2] The single place where raw sensor data becomes game input (one per player slot):
     ///
     ///   IPlayerInputSource (raw 0-1023) -> normalise (calibration) -> filter chain -> deadzone
-    ///   -> PlayerInputState (Up, Down in 0-1; Velocity = Up - Down; Sum = Up + Down)
+    ///   -> PlayerInputState (Up, Down in the configured range; Velocity = Up - Down; Sum = Up + Down)
     ///
     /// Stale-data safety: if the source reports nothing, or the newest sample is older than
     /// <see cref="staleTimeout"/>, the output is zero (never hold the last high value).
@@ -196,7 +196,10 @@ namespace SSRP.Input
         private int UpChannel => (Mathf.Max(1, PlayerId) - 1) * 2;
         private int DownChannel => UpChannel + 1;
 
-        /// <summary>(x - baseline) / (max - baseline), clamped to 0-1. Default range is 0-1023.</summary>
+        /// <summary>
+        /// Maps the calibrated firm-grip point to the configured upper limit. Values above that
+        /// point continue toward 1 at the configured maximum force.
+        /// </summary>
         private float Normalise(float raw, int channel)
         {
             GetRange(channel, out float baseline, out float max);
@@ -205,7 +208,27 @@ namespace SSRP.Input
             if (span <= 0.0001f)
                 return 0f;
 
-            return Mathf.Clamp01((raw - baseline) / span);
+            float upperLimit = paddleConfig != null
+                ? Mathf.Clamp01(paddleConfig.normalizationUpperLimit)
+                : 0.75f;
+            float forceMax = paddleConfig != null
+                ? Mathf.Clamp(paddleConfig.normalizationForceMax, 0f, MaxAdc)
+                : MaxAdc;
+
+            if (raw <= baseline)
+                return 0f;
+
+            if (raw <= max)
+                return Mathf.Lerp(0f, upperLimit, (raw - baseline) / span);
+
+            // The configured force maximum cannot be below the calibrated firm-grip point.
+            forceMax = Mathf.Max(forceMax, max);
+            float forceHeadroom = forceMax - max;
+            if (forceHeadroom <= 0.0001f)
+                return raw >= forceMax ? 1f : upperLimit;
+
+            float aboveFirmGrip = Mathf.Clamp01((raw - max) / forceHeadroom);
+            return Mathf.Lerp(upperLimit, 1f, aboveFirmGrip);
         }
 
         /// <summary>

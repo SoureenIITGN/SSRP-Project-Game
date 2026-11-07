@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 497954bab5b99a54c9bc236413023a54, type: 3}
   m_Name: PaddleConfig
   m_EditorClassIdentifier: SSRP.Runtime::SSRP.Core.PaddleConfig
-  maxSpeed: 9
+  maxSpeed: 12
   height: 2
   width: 0.3
   deadzone: 0.05
+  normalizationUpperLimit: 0.75
+  normalizationForceMax: 885
   acceleration: 0

@@ -15,7 +15,8 @@ the Python standard library. No third-party audio is included. Licence: same as 
 | `tile_hit.wav` | Ball hits a tile | 880 to 700 Hz square blip with noise |
 | `tile_break.wav` | Tile destroyed | Filtered noise burst with a falling square sweep |
 | `goal.wav` | Goal scored | C-E-G-C square arpeggio |
-| `parry.wav` | Parry triggered | Rising two-voice sine shimmer |
+| `parry.wav` | Any parry press (quiet) | Rising two-voice sine shimmer |
+| `parry_success.wav` | Successful parry | Bass thump, noise crack, inharmonic metallic ring (5 partials, detuned pairs) + small-room reverb |
 | `countdown_tick.wav` | 3, 2, 1 | 660 Hz sine |
 | `countdown_go.wav` | GO! | 990 Hz sine |
 | `match_over.wav` | Results screen | G-E-C-C triangle phrase |

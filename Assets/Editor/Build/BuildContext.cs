@@ -121,6 +121,8 @@ namespace SSRP.EditorTools
             c.PaddleConfig.height = 2f;
             c.PaddleConfig.width = 0.3f;
             c.PaddleConfig.deadzone = 0.05f;
+            c.PaddleConfig.normalizationUpperLimit = 0.75f;
+            c.PaddleConfig.normalizationForceMax = 1023f;
             c.PaddleConfig.acceleration = 0f;
             BuildUtil.Save(c.PaddleConfig);
 

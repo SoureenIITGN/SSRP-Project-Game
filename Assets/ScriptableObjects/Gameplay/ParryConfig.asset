@@ -17,9 +17,9 @@ MonoBehaviour:
   holdTime: 0.02
   cooldown: 0.8
   requireRelease: 1
-  activeWindow: 0.3
+  activeWindow: 0.2
   lateGrace: 0.1
-  speedMultiplier: 1.5
+  speedMultiplier: 2
   fireMaxDuration: 6
   flashColour: {r: 1, g: 1, b: 1, a: 1}
   flashDuration: 0.2

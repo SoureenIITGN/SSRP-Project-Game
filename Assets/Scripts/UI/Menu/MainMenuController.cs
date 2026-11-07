@@ -56,7 +56,7 @@ namespace SSRP.UI
                 new Vector2(0f, -120f), new Vector2(1400f, 180f));
 
             Text subtitle = UiFactory.CreateText(main, "Subtitle",
-                "Two players. Four force sensors. Squeeze to move.", 34, TextAnchor.MiddleCenter, UiTheme.TextDim);
+                "PVP Pong using FSR controllers", 34, TextAnchor.MiddleCenter, UiTheme.TextDim);
             UiFactory.Place(subtitle.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
                 new Vector2(0f, -290f), new Vector2(1400f, 60f));
 
