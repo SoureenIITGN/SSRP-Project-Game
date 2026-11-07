@@ -64,6 +64,46 @@ def concat(*tracks):
     return out
 
 
+def metallic_ring(f0, seconds, partials, volume=0.6, detune=2.5):
+    """Inharmonic struck-metal ring: each partial (ratio, amplitude, decay/s) decays on its own.
+    A slightly detuned copy of every partial adds the shimmering 'beating' of a real blade."""
+    n = int(RATE * seconds)
+    out = [0.0] * n
+    for ratio, amp, decay in partials:
+        for f in (f0 * ratio, f0 * ratio + detune):
+            w = 2 * math.pi * f / RATE
+            for i in range(n):
+                out[i] += 0.5 * amp * math.sin(w * i) * math.exp(-decay * i / RATE)
+    attack = int(RATE * 0.002)
+    return [x * volume * min(1.0, i / max(1, attack)) for i, x in enumerate(out)]
+
+
+def thump(f_start, f_end, seconds, volume=0.9):
+    """Bass impact with an exponential pitch drop."""
+    n = int(RATE * seconds)
+    phase, out = 0.0, []
+    for i in range(n):
+        t = i / RATE
+        f = f_end + (f_start - f_end) * math.exp(-t * 25)
+        phase += 2 * math.pi * f / RATE
+        out.append(math.sin(phase) * volume * math.exp(-t * 9))
+    return out
+
+
+def reverb(samples, taps=((0.031, 0.45), (0.047, 0.35), (0.071, 0.27), (0.109, 0.2), (0.163, 0.13)), tail=0.6):
+    """Cheap room: a few early reflections, then a feedback echo for the tail."""
+    extra = int(RATE * (taps[-1][0] + tail))
+    out = list(samples) + [0.0] * extra
+    for delay, gain in taps:
+        d = int(RATE * delay)
+        for i, x in enumerate(samples):
+            out[i + d] += x * gain
+    d = int(RATE * 0.083)
+    for i in range(d, len(out)):
+        out[i] += out[i - d] * 0.33
+    return out
+
+
 def write(name, samples):
     os.makedirs(OUT, exist_ok=True)
     peak = max(1e-9, max(abs(s) for s in samples))
@@ -85,6 +125,11 @@ def main():
     write("goal", concat(tone(523, 523, 0.10, "square", 0.4), tone(659, 659, 0.10, "square", 0.4),
                          tone(784, 784, 0.10, "square", 0.4), tone(1047, 1047, 0.28, "square", 0.4, 0.8)))
     write("parry", mix(tone(1200, 1800, 0.22, "sine", 0.5, 0.7), tone(1800, 2400, 0.22, "sine", 0.25, 0.7)))
+    # Successful parry: bass hit + bright crack + ringing steel 'TING' in a small room (an 'ultra-kill' clang).
+    ring = metallic_ring(1320, 1.1, [(1.0, 1.0, 3.2), (2.32, 0.7, 4.5), (3.87, 0.5, 6.0), (5.41, 0.35, 8.0), (8.93, 0.2, 11.0)], 0.55)
+    shing = tone(2600, 5200, 0.12, "sine", 0.18, 1.5)
+    crack = noise(0.03, 0.9, 0.85, 7)
+    write("parry_success", reverb(mix(thump(180, 42, 0.35, 1.0), crack, ring, shing)))
     write("countdown_tick", tone(660, 660, 0.12, "sine", 0.6, 1.0))
     write("countdown_go", tone(990, 990, 0.35, "sine", 0.7, 0.8))
     write("match_over", concat(tone(784, 784, 0.14, "triangle", 0.5), tone(659, 659, 0.14, "triangle", 0.5),

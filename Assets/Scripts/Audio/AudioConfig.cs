@@ -11,7 +11,10 @@ namespace SSRP.Audio
         public AudioClip tileHit;
         public AudioClip tileBreak;
         public AudioClip goal;
+        [Tooltip("Any parry press (quiet swish).")]
         public AudioClip parry;
+        [Tooltip("Parry that met the ball (big clang).")]
+        public AudioClip parrySuccess;
         public AudioClip countdownTick;
         public AudioClip countdownGo;
         public AudioClip matchOver;

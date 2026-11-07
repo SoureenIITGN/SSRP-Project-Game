@@ -12,9 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d51791fb92cc4be2bbd0a65495a79ed3, type: 3}
   m_Name: ParryConfig
   m_EditorClassIdentifier: SSRP.Runtime::SSRP.Gameplay.ParryConfig
-  pressThreshold: 0.6
-  balanceTolerance: 0.2
-  holdTime: 0.12
+  pressThreshold: 0.55
+  balanceTolerance: 0.35
+  holdTime: 0.02
   cooldown: 0.8
+  requireRelease: 1
+  activeWindow: 0.3
+  lateGrace: 0.1
+  speedMultiplier: 1.5
+  fireMaxDuration: 6
   flashColour: {r: 1, g: 1, b: 1, a: 1}
-  flashDuration: 0.25
+  flashDuration: 0.2
+  successFlashColour: {r: 1, g: 0.5, b: 0.1, a: 1}
+  successFlashDuration: 0.4
+  dataVersion: 2

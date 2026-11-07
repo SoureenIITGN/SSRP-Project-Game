@@ -38,6 +38,9 @@ namespace SSRP.Flow
         [SerializeField, Tooltip("Optional: use this config instead of the menu's (for testing the Game scene).")]
         private MatchConfig configOverride;
 
+        [SerializeField, Min(0f), Tooltip("Tiles within this distance of the ball spawn are removed when the arena loads.")]
+        private float ballSpawnClearRadius = 0.75f;
+
         [SerializeField, Tooltip("Ask for calibration when a player uses sensors and none is saved.")]
         private bool requireCalibrationForHardware = true;
 
@@ -113,6 +116,12 @@ namespace SSRP.Flow
             }
 
             ArenaBounds bounds = anchors.Bounds;
+
+            // A ball that spawns inside tiles gets stuck: keep the spawn area clear in every arena.
+            int cleared = arenaLoader.ClearTilesAround(anchors.BallSpawn, ballSpawnClearRadius);
+            if (cleared > 0)
+                Debug.LogWarning($"GameManager: removed {cleared} tile(s) covering the ball spawn in arena " +
+                                 $"'{arena.displayName}'. Move them away from the spawn point in the prefab.", this);
 
             if (cameraFitter != null)
                 cameraFitter.Fit(bounds, anchors.CameraMargin);

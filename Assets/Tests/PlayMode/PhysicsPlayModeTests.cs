@@ -246,30 +246,77 @@ namespace SSRP.Tests
             Assert.That(paddle.transform.position.y, Is.LessThanOrEqualTo(5f));
         }
 
-        [UnityTest]
-        public IEnumerator Parry_TriggersOnBalancedFirmPress_NotOnSwitch()
+        private ParryAbility MakeParry()
         {
             ParryConfig config = Track(ScriptableObject.CreateInstance<ParryConfig>());
             var go = Track(new GameObject("TestParry"));
             go.AddComponent<SpriteRenderer>();
             ParryAbility parry = go.AddComponent<ParryAbility>();
-            typeof(ParryAbility)
-                .GetField("config", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                .SetValue(parry, config);
+            parry.SetConfig(config);
+            return parry;
+        }
+
+        [UnityTest]
+        public IEnumerator Parry_TriggersOnBalancedFirmPress_NotOnSwitch()
+        {
+            ParryAbility parry = MakeParry();
             yield return null;
 
-            // A quick switch from Up to Down passes through balance for one frame only: no parry.
+            // Switching Up -> Down (keyboard ramp) crosses at ~0.5/0.5, below the 0.55 threshold: no parry.
             parry.Tick(new PlayerInputState { Up = 1f, Down = 0f }, 0.02f);
-            parry.Tick(new PlayerInputState { Up = 0.7f, Down = 0.7f }, 0.02f);
+            parry.Tick(new PlayerInputState { Up = 0.5f, Down = 0.5f }, 0.02f);
             parry.Tick(new PlayerInputState { Up = 0f, Down = 1f }, 0.02f);
             Assert.That(parry.TriggerCount, Is.EqualTo(0));
 
-            // Both firmly for longer than holdTime: one parry, then cooldown.
-            for (int i = 0; i < 20; i++)
+            // Both firmly: fires on the first frame (hold 0.02 s), holding does not repeat.
+            for (int i = 0; i < 60; i++)
                 parry.Tick(new PlayerInputState { Up = 1f, Down = 1f }, 0.02f);
 
             Assert.That(parry.TriggerCount, Is.EqualTo(1));
-            Assert.That(parry.IsOnCooldown, Is.True);
+
+            // Release, wait out the cooldown, press again: second parry.
+            for (int i = 0; i < 5; i++)
+                parry.Tick(new PlayerInputState { Up = 0f, Down = 0f }, 0.02f);
+            parry.Tick(new PlayerInputState { Up = 1f, Down = 0.8f }, 0.02f);
+            Assert.That(parry.TriggerCount, Is.EqualTo(2));
+        }
+
+        [UnityTest]
+        public IEnumerator Parry_SuccessSetsBallOnFire()
+        {
+            ParryAbility parry = MakeParry();
+            BallController ball = MakeBall(MakeConfig(8f), Vector2.zero);
+            yield return null;
+
+            int successes = 0;
+            System.Action<int> handler = _ => successes++;
+            GameEvents.ParrySucceeded += handler;
+
+            try
+            {
+                // Ball touching a paddle that did not parry: nothing.
+                parry.OnBallHit(new BallHitInfo { Other = ball.gameObject });
+                Assert.That(parry.SuccessCount, Is.EqualTo(0));
+                yield return new WaitForSeconds(0.2f);   // leave the late-parry grace window
+
+                parry.Tick(new PlayerInputState { Up = 1f, Down = 1f }, 0.02f);   // parry
+                parry.OnBallHit(new BallHitInfo { Other = ball.gameObject });     // ball arrives in the window
+
+                Assert.That(parry.SuccessCount, Is.EqualTo(1));
+                Assert.That(successes, Is.EqualTo(1));
+                Assert.That(ball.Modifiers.Contains(BallFireEffect.ModifierKey), Is.True);
+                Assert.That(ball.GetComponent<BallFireEffect>().IsBurning, Is.True);
+                Assert.That(ball.CurrentSpeed, Is.EqualTo(8f * 1.5f).Within(1e-3f));
+
+                // Goal reset clears the modifier, which puts the fire out.
+                ball.ResetToCenter();
+                yield return null;
+                Assert.That(ball.GetComponent<BallFireEffect>().IsBurning, Is.False);
+            }
+            finally
+            {
+                GameEvents.ParrySucceeded -= handler;
+            }
         }
     }
 }

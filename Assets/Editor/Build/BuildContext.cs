@@ -154,6 +154,14 @@ namespace SSRP.EditorTools
             BuildUtil.Save(c.SerialConfig);
 
             c.ParryConfig = BuildUtil.LoadOrCreate<ParryConfig>($"{BuildUtil.SoGameplay}/ParryConfig.asset");
+
+            // Upgrade older assets once (new fields + lower input lag); later Inspector tweaks are kept.
+            if (c.ParryConfig.dataVersion < ParryConfig.CurrentDataVersion)
+            {
+                c.ParryConfig.ApplyDefaults();
+                c.Log("ParryConfig upgraded to the new defaults (hold 0.02 s, tolerance 0.35, success window).");
+            }
+
             BuildUtil.Save(c.ParryConfig);
 
             c.AudioConfig = BuildUtil.LoadOrCreate<AudioConfig>($"{BuildUtil.SoAudio}/AudioConfig.asset");
@@ -163,6 +171,7 @@ namespace SSRP.EditorTools
             c.AudioConfig.tileBreak = Clip("tile_break");
             c.AudioConfig.goal = Clip("goal");
             c.AudioConfig.parry = Clip("parry");
+            c.AudioConfig.parrySuccess = Clip("parry_success");
             c.AudioConfig.countdownTick = Clip("countdown_tick");
             c.AudioConfig.countdownGo = Clip("countdown_go");
             c.AudioConfig.matchOver = Clip("match_over");

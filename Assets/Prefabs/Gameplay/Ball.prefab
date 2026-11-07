@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 6840435987957806306}
   - component: {fileID: 5159320251495051773}
   - component: {fileID: 6265974904102545954}
+  - component: {fileID: 751917664282137814}
   m_Layer: 6
   m_Name: Ball
   m_TagString: Untagged
@@ -317,3 +318,20 @@ TrailRenderer:
   m_Autodestruct: 0
   m_Emitting: 1
   m_ApplyActiveColorSpace: 1
+--- !u!114 &751917664282137814
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 849611646349178110}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aef2f7084bed485c8a7a10d21f5c55fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SSRP.Runtime::SSRP.Gameplay.BallFireEffect
+  fireColour: {r: 1, g: 0.42, b: 0.05, a: 1}
+  hotColour: {r: 1, g: 0.82, b: 0.3, a: 1}
+  flickerSpeed: 18
+  trailTime: 0.35
+  trailWidth: 0.5

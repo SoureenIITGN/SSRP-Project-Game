@@ -18,6 +18,7 @@ MonoBehaviour:
   tileBreak: {fileID: 8300000, guid: ac1764b013254b44a207d99f721204e4, type: 3}
   goal: {fileID: 8300000, guid: 32b5d9aea4b946e387a8b79a6461fd5c, type: 3}
   parry: {fileID: 8300000, guid: 38953b4c4fbc440bb3c27e07c32f6d94, type: 3}
+  parrySuccess: {fileID: 8300000, guid: d19eeb0df9e8b044eae6ac14ef73f79b, type: 3}
   countdownTick: {fileID: 8300000, guid: 3da1726149894a1099707c48b8c9f0b5, type: 3}
   countdownGo: {fileID: 8300000, guid: 5404a8dfd9d740888c4a5149ed065312, type: 3}
   matchOver: {fileID: 8300000, guid: 688691b97d244d59b5a0b58a28d0c20e, type: 3}

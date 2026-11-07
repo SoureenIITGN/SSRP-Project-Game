@@ -73,9 +73,11 @@ namespace SSRP.EditorTools
             var classic = new Layout();
             c.ArenaClassicPrefab = BuildArena(c, "Arena01_Classic", classic);
 
-            // Arena 02 - Bunker: breakable centre wall, solid corner blocks, bounce pads.
+            // Arena 02 - Bunker: breakable centre wall (gap in the middle so the ball spawn is clear),
+            // solid corner blocks, bounce pads.
             var bunker = new Layout();
-            bunker.Interactive.Add((new Vector2(-0.5f, -3f), new Vector2(0.5f, 3f), c.Breakable));
+            bunker.Interactive.Add((new Vector2(-0.5f, 1f), new Vector2(0.5f, 3f), c.Breakable));
+            bunker.Interactive.Add((new Vector2(-0.5f, -3f), new Vector2(0.5f, -1f), c.Breakable));
             foreach (float sx in new[] { -1f, 1f })
             {
                 float x0 = sx > 0 ? 4f : -5f;
@@ -107,12 +109,19 @@ namespace SSRP.EditorTools
             c.Arenas.Add(Definition("Arena01_Classic", "classic", "Classic",
                 "Plain Pong: two walls, two goals. Best for tuning filters.", c.ThumbClassic, c.ArenaClassicPrefab));
             c.Arenas.Add(Definition("Arena02_Bunker", "bunker", "Bunker",
-                "A breakable brick wall splits the court. Corner blocks and bounce pads.", c.ThumbBunker, c.ArenaBunkerPrefab));
+                "Two breakable brick walls guard the centre line. Corner blocks and bounce pads.", c.ThumbBunker, c.ArenaBunkerPrefab));
             c.Arenas.Add(Definition("Arena03_Pillars", "pillars", "Pillars",
                 "Four pillars, a speed zone through the middle and slow-mo pickups.", c.ThumbPillars, pillarsPrefab));
 
             c.ArenaRegistry = BuildUtil.LoadOrCreate<ArenaRegistry>($"{BuildUtil.SoArena}/ArenaRegistry.asset");
-            c.ArenaRegistry.arenas = new List<ArenaDefinition>(c.Arenas);
+            // Built-in arenas first, then keep any arenas the team added by hand.
+            var arenas = new List<ArenaDefinition>(c.Arenas);
+            foreach (ArenaDefinition existing in c.ArenaRegistry.arenas)
+            {
+                if (existing != null && !arenas.Contains(existing))
+                    arenas.Add(existing);
+            }
+            c.ArenaRegistry.arenas = arenas;
             BuildUtil.Save(c.ArenaRegistry);
             c.Log("Arenas: Classic, Bunker, Pillars (+ definitions and registry).");
         }

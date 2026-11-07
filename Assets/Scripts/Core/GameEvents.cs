@@ -12,6 +12,7 @@ namespace SSRP.Core
     ///  - TileDestroyed now carries the world position (for particles).
     ///  - New: ScoreChanged(playerId, score) raised by the GameManager after it updates the score.
     ///  - New: CountdownTick(secondsLeft) raised during the pre-serve countdown (3, 2, 1, then 0 = GO).
+    ///  - New: ParrySucceeded(playerId) when a parry meets the ball (ParryTriggered = any parry press).
     /// </summary>
     public static class GameEvents
     {
@@ -24,6 +25,7 @@ namespace SSRP.Core
         public static event Action<MatchPhase> MatchStateChanged;
         public static event Action<int> CountdownTick;
         public static event Action<int> ParryTriggered;
+        public static event Action<int> ParrySucceeded;
         public static event Action<int, bool> InputConnectionChanged;
 
         public static void RaiseGoalScored(int playerId) =>
@@ -53,6 +55,10 @@ namespace SSRP.Core
         public static void RaiseParryTriggered(int playerId) =>
             ParryTriggered?.Invoke(playerId);
 
+        /// <summary>A parry that actually met the ball (timed within the active window).</summary>
+        public static void RaiseParrySucceeded(int playerId) =>
+            ParrySucceeded?.Invoke(playerId);
+
         public static void RaiseInputConnectionChanged(int playerId, bool isConnected) =>
             InputConnectionChanged?.Invoke(playerId, isConnected);
 
@@ -73,6 +79,7 @@ namespace SSRP.Core
             MatchStateChanged = null;
             CountdownTick = null;
             ParryTriggered = null;
+            ParrySucceeded = null;
             InputConnectionChanged = null;
         }
     }

@@ -84,6 +84,7 @@ namespace SSRP.EditorTools
             go.AddComponent<PaddleHitResolver>();
 
             TrailRenderer trail = go.AddComponent<TrailRenderer>();
+            go.AddComponent<BallFireEffect>();   // (Awake reads the trail at runtime, order does not matter)
             trail.sharedMaterial = c.ParticleMaterial;
             trail.time = 0.12f;
             trail.startWidth = 0.3f;

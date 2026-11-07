@@ -21,11 +21,17 @@ namespace SSRP.Audio
         [Header("Hit-stop")]
         [SerializeField, Min(0f)] private float hitStopSeconds = 0.04f;
 
+        [Header("Successful parry")]
+        [SerializeField, Min(0f), Tooltip("Freeze-frame on a successful parry.")]
+        private float parryHitStopSeconds = 0.12f;
+        [SerializeField, Min(0f)] private float parryShakeAmplitude = 0.25f;
+
         [Header("Particles")]
         [SerializeField] private ParticleSystem tileBurstPrefab;
 
         private Coroutine shakeRoutine;
         private Coroutine hitStopRoutine;
+        private float hitStopUntil;
         private Vector3 shakeBase;
         private MatchPhase phase = MatchPhase.Playing;
 
@@ -40,6 +46,7 @@ namespace SSRP.Audio
             GameEvents.GoalScored += OnGoal;
             GameEvents.TileDestroyed += OnTileDestroyed;
             GameEvents.BallHitPaddle += OnPaddleHit;
+            GameEvents.ParrySucceeded += OnParrySucceeded;
             GameEvents.MatchStateChanged += OnPhase;
         }
 
@@ -48,6 +55,7 @@ namespace SSRP.Audio
             GameEvents.GoalScored -= OnGoal;
             GameEvents.TileDestroyed -= OnTileDestroyed;
             GameEvents.BallHitPaddle -= OnPaddleHit;
+            GameEvents.ParrySucceeded -= OnParrySucceeded;
             GameEvents.MatchStateChanged -= OnPhase;
         }
 
@@ -69,19 +77,41 @@ namespace SSRP.Audio
 
         private void OnPaddleHit()
         {
-            if (!GameSettings.HitStop || hitStopSeconds <= 0f || hitStopRoutine != null)
+            if (GameSettings.HitStop)
+                HitStop(hitStopSeconds);
+        }
+
+        private void OnParrySucceeded(int _)
+        {
+            Shake(parryShakeAmplitude);
+
+            if (GameSettings.HitStop)
+                HitStop(parryHitStopSeconds);
+        }
+
+        /// <summary>Freeze time for <paramref name="seconds"/> (extends a freeze that is already running).</summary>
+        private void HitStop(float seconds)
+        {
+            if (seconds <= 0f || phase == MatchPhase.Paused)
+                return;
+
+            hitStopUntil = Mathf.Max(hitStopUntil, Time.realtimeSinceStartup + seconds);
+
+            if (hitStopRoutine != null)
                 return;
 
             if (!Mathf.Approximately(Time.timeScale, 1f))
                 return;
 
-            hitStopRoutine = StartCoroutine(HitStop());
+            hitStopRoutine = StartCoroutine(HitStopRoutine());
         }
 
-        private IEnumerator HitStop()
+        private IEnumerator HitStopRoutine()
         {
             Time.timeScale = 0f;
-            yield return new WaitForSecondsRealtime(hitStopSeconds);
+
+            while (Time.realtimeSinceStartup < hitStopUntil)
+                yield return null;
 
             // Do not undo a pause (or the end of the match) that happened during the hit-stop.
             if (phase != MatchPhase.Paused && Mathf.Approximately(Time.timeScale, 0f))

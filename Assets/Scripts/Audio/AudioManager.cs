@@ -39,6 +39,7 @@ namespace SSRP.Audio
             GameEvents.TileDestroyed += OnTileDestroyed;
             GameEvents.GoalScored += OnGoal;
             GameEvents.ParryTriggered += OnParry;
+            GameEvents.ParrySucceeded += OnParrySucceeded;
             GameEvents.CountdownTick += OnCountdown;
             GameEvents.MatchStateChanged += OnPhase;
         }
@@ -51,6 +52,7 @@ namespace SSRP.Audio
             GameEvents.TileDestroyed -= OnTileDestroyed;
             GameEvents.GoalScored -= OnGoal;
             GameEvents.ParryTriggered -= OnParry;
+            GameEvents.ParrySucceeded -= OnParrySucceeded;
             GameEvents.CountdownTick -= OnCountdown;
             GameEvents.MatchStateChanged -= OnPhase;
         }
@@ -62,7 +64,8 @@ namespace SSRP.Audio
         private void OnTileHit() => Play(config != null ? config.tileHit : null, 0.8f);
         private void OnTileDestroyed(Vector2 _) => Play(config != null ? config.tileBreak : null);
         private void OnGoal(int _) => Play(config != null ? config.goal : null);
-        private void OnParry(int _) => Play(config != null ? config.parry : null);
+        private void OnParry(int _) => Play(config != null ? config.parry : null, 0.45f);
+        private void OnParrySucceeded(int _) => Play(config != null ? config.parrySuccess : null, 1f, false);
 
         private void OnCountdown(int secondsLeft)
         {

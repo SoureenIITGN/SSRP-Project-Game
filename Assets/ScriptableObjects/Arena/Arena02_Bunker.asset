@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: SSRP.Runtime::SSRP.Arena.ArenaDefinition
   id: bunker
   displayName: Bunker
-  description: A breakable brick wall splits the court. Corner blocks and bounce
-    pads.
+  description: Two breakable brick walls guard the centre line. Corner blocks and
+    bounce pads.
   thumbnail: {fileID: 21300000, guid: 1bfa7b123e58441abfd617818fb41610, type: 3}
   arenaPrefab: {fileID: 4173664633951119044, guid: 733ff2c60d4661e43b818b52d93039d1, type: 3}
   ballConfigOverride: {fileID: 0}

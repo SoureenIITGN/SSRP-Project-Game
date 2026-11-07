@@ -126,7 +126,8 @@ def thumbnails():
     save(img, "arena_classic")
 
     img, d = thumb_base()
-    rect(d, -0.5, -3, 0.5, 3, BRICK)
+    rect(d, -0.5, 1, 0.5, 3, BRICK)
+    rect(d, -0.5, -3, 0.5, -1, BRICK)
     for sx in (-1, 1):
         for sy in (-1, 1):
             x0 = 4 if sx > 0 else -5

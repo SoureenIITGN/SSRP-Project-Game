@@ -42,6 +42,7 @@ namespace SSRP.UI
             GameEvents.MatchStateChanged += OnPhaseChanged;
             GameEvents.CountdownTick += OnCountdownTick;
             GameEvents.GoalScored += OnGoalScored;
+            GameEvents.ParrySucceeded += OnParrySucceeded;
         }
 
         private void OnDisable()
@@ -49,6 +50,7 @@ namespace SSRP.UI
             GameEvents.MatchStateChanged -= OnPhaseChanged;
             GameEvents.CountdownTick -= OnCountdownTick;
             GameEvents.GoalScored -= OnGoalScored;
+            GameEvents.ParrySucceeded -= OnParrySucceeded;
         }
 
         private void EnsureView()
@@ -175,6 +177,16 @@ namespace SSRP.UI
             pointText.text = "Point " + player.displayName;
             pointText.color = player.colour;
             pointAnim = 1.2f;
+        }
+
+        private void OnParrySucceeded(int playerId)
+        {
+            GameManager gm = GameManager.Instance;
+            PlayerDefinition player = gm != null ? gm.GetPlayer(playerId) : null;
+
+            pointText.text = player != null ? $"PARRY!  ({player.displayName})" : "PARRY!";
+            pointText.color = new Color(1f, 0.55f, 0.1f);
+            pointAnim = 0.9f;
         }
 
         private void Update()
