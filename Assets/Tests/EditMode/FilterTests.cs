@@ -57,6 +57,43 @@ namespace SSRP.Tests
                 Is.TypeOf<ExponentialFilter>());
             Assert.That(FilterFactory.Create(new FilterStage { type = FilterType.PassThrough }),
                 Is.TypeOf<PassThroughFilter>());
+            Assert.That(FilterFactory.Create(new FilterStage { type = FilterType.MovingAverage }),
+                Is.TypeOf<MovingAverageFilter>());
+            Assert.That(FilterFactory.Create(new FilterStage { type = FilterType.Median }),
+                Is.TypeOf<MedianFilter>());
+            Assert.That(FilterFactory.Create(new FilterStage { type = FilterType.Butterworth }),
+                Is.TypeOf<ButterworthFilter>());
+        }
+
+        [Test]
+        public void MovingAverage_UsesConfiguredWindow()
+        {
+            var filter = new MovingAverageFilter(3);
+
+            Assert.That(filter.Process(0f, 0.01f), Is.EqualTo(0f));
+            Assert.That(filter.Process(1f, 0.01f), Is.EqualTo(0.5f));
+            Assert.That(filter.Process(1f, 0.01f), Is.EqualTo(2f / 3f).Within(1e-6f));
+            Assert.That(filter.Process(1f, 0.01f), Is.EqualTo(1f));
+        }
+
+        [Test]
+        public void Median_RemovesSingleSpike()
+        {
+            var filter = new MedianFilter(3);
+
+            filter.Process(0.2f, 0.01f);
+            filter.Process(0.2f, 0.01f);
+            Assert.That(filter.Process(1f, 0.01f), Is.EqualTo(0.2f).Within(1e-6f));
+        }
+
+        [Test]
+        public void Butterworth_ResetReturnsToZero()
+        {
+            var filter = new ButterworthFilter(5f, 2);
+            filter.Process(1f, 0.01f);
+            filter.Reset();
+
+            Assert.That(filter.Process(0f, 0.01f), Is.EqualTo(0f).Within(1e-6f));
         }
 
         [Test]

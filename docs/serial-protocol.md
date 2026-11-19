@@ -13,6 +13,7 @@ If you change anything here, change all of them in the same PR.
 | Encoding | ASCII |
 | Line ending | `\n` (a preceding `\r` is tolerated) |
 | Sample rate | 200 Hz by default (`SAMPLE_RATE_HZ`) |
+| Anti-alias filter | Disabled by default (`ANTI_ALIAS_ENABLED`); when enabled, a cascaded one-pole filter uses `ANTI_ALIAS_ORDER` stages and `ANTI_ALIAS_CUTOFF_HZ` |
 
 ## Data lines
 
@@ -32,14 +33,16 @@ t_us,p1_up,p1_down,p2_up,p2_down
 
 Example: `1234567,512,3,0,1020`
 
-Values are **raw**. The firmware does no filtering (the noise is what we study).
-A higher number means more force.
+Values are raw ADC counts unless the optional firmware anti-alias filter is
+enabled. With the filter enabled, values are still in the `0..1023` ADC-count
+range, but are low-pass filtered before transmission. A higher number means
+more force.
 
 ## Comment lines
 
 Lines starting with `#` are comments. Parsers must ignore them, apart from optionally showing them.
 
-- Boot banner (always the first line): `# SSRP-FSR v1 rate=200Hz discard=1 oversample=1`
+- Boot banner (always the first line): `# SSRP-FSR v1 rate=200Hz discard=1 oversample=1 aa=0 order=2 cutoff=20Hz`
 - Column header: `# columns: t_us,p1_up,p1_down,p2_up,p2_down`
 - Loop overruns, at most once per second: `# overruns=3`
 
@@ -72,6 +75,13 @@ Player ids are 1-based everywhere in the game (`PlayerDefinition.playerId`, `Gam
 - Line length: up to 10 + 4x4 + 4 commas + newline = 31 bytes. At 115200 baud
   (11520 bytes/s) that takes ~2.7 ms, which fits in the 5 ms period at 200 Hz.
 - If the PC shows gaps or many parse errors, set `SAMPLE_RATE_HZ 100`.
+- If `ANTI_ALIAS_ENABLED` is `1`, keep `ANTI_ALIAS_CUTOFF_HZ` below
+  `SAMPLE_RATE_HZ / 2`. The sketch cascades identical one-pole stages, so
+  `ANTI_ALIAS_ORDER` controls the filter order; higher order gives steeper
+  roll-off and more delay.
+- This is a digital low-pass stage for filtering before later software
+  downsampling. It cannot undo aliasing that already occurred at the Arduino
+  ADC; use an analog RC low-pass before the ADC when that protection is needed.
 
 ## Measured results (fill in during [A1]/[A5] on the real board)
 

@@ -36,10 +36,10 @@ namespace SSRP.UI
         private Image arenaThumbnail;
         private Text arenaDescription;
         private CalibrationPanel calibrationPanel;
-        private Button firstSelectable;
+        private Selectable firstSelectable;
         private bool built;
 
-        public Button FirstSelectable => firstSelectable;
+        public Selectable FirstSelectable => firstSelectable;
 
         public static MatchSetupPanel Create(Transform parent)
         {
@@ -105,18 +105,23 @@ namespace SSRP.UI
         private void BuildOptions(Transform parent)
         {
             // Target score.
-            List<int> targets = catalog != null && catalog.targetScoreOptions.Count > 0
-                ? catalog.targetScoreOptions
-                : new List<int> { 5, 7, 11 };
-            var targetLabels = new List<string>();
-            foreach (int t in targets) targetLabels.Add("First to " + t);
-            int targetIndex = Mathf.Max(0, targets.IndexOf(config.targetScore));
-            OptionSelector target = OptionSelector.Create(parent, "Target score", targetLabels, targetIndex, i =>
+            RectTransform targetRow = UiFactory.CreateRow(parent, "Option - Target score", 62f, 12f);
+            Text targetLabel = UiFactory.CreateText(targetRow, "Label", "Target score", 30, TextAnchor.MiddleLeft);
+            UiFactory.SetSize(targetLabel, 330f, 62f, 0f);
+
+            Text targetValue = UiFactory.CreateText(targetRow, "Value", "", 30, TextAnchor.MiddleCenter, UiTheme.Accent);
+            UiFactory.SetSize(targetValue, 100f, 62f, 0f);
+
+            Slider targetSlider = UiFactory.CreateSlider(targetRow, "TargetScoreSlider", 2f, 12f,
+                Mathf.Clamp(config.targetScore, 2, 12), value =>
             {
-                config.targetScore = targets[i];
+                config.targetScore = Mathf.RoundToInt(value);
+                targetValue.text = "First to " + config.targetScore;
                 Save();
-            });
-            firstSelectable = target.NextButton;
+            }, 380f);
+            targetSlider.wholeNumbers = true;
+            targetValue.text = "First to " + config.targetScore;
+            firstSelectable = targetSlider;
 
             // Ball speed preset.
             if (catalog != null && catalog.ballPresets.Count > 0)

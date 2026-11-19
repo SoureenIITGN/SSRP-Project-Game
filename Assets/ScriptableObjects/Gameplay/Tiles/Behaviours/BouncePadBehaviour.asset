@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a1d1d0b92dc4a1183efd3f8178cd695, type: 3}
   m_Name: BouncePadBehaviour
   m_EditorClassIdentifier: SSRP.Runtime::SSRP.Gameplay.BouncePadBehaviour
-  speedMultiplier: 1.5
+  speedMultiplier: 1
   duration: 1.2

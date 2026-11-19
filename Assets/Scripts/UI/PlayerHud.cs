@@ -218,7 +218,13 @@ namespace SSRP.UI
             {
                 filters += stage.type == FilterType.Exponential
                     ? $"EMA(tau={stage.timeConstant * 1000f:0}ms) "
-                    : "pass ";
+                    : stage.type == FilterType.MovingAverage
+                        ? $"MA(N={stage.windowSize}) "
+                        : stage.type == FilterType.Median
+                            ? $"median(N={stage.windowSize}) "
+                            : stage.type == FilterType.Butterworth
+                                ? $"Butterworth(order={stage.order}, fc={stage.cutoffFrequency:0.##}Hz) "
+                                : "pass ";
             }
 
             panel.DebugText.text =

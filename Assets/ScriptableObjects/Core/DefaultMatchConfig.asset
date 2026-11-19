@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a614a1c383157c9439fd1b0bdd55b946, type: 3}
   m_Name: DefaultMatchConfig
   m_EditorClassIdentifier: SSRP.Runtime::SSRP.Core.MatchConfig
-  targetScore: 5
+  targetScore: 3
   ballConfig: {fileID: 11400000, guid: 27945d1d65396fe4893a21ee37e6c294, type: 2}
   paddleConfig: {fileID: 11400000, guid: 7b4a6f95d69548e40b02a2db64fe32d7, type: 2}
   arenaId: classic

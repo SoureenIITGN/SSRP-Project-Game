@@ -54,7 +54,7 @@ namespace SSRP.Flow
                 return;
 
             if (PlayerPrefs.HasKey(TargetScoreKey))
-                config.targetScore = Mathf.Max(1, PlayerPrefs.GetInt(TargetScoreKey));
+                config.targetScore = Mathf.Clamp(PlayerPrefs.GetInt(TargetScoreKey), 2, 12);
 
             if (catalog != null && PlayerPrefs.HasKey(BallPresetKey))
             {
